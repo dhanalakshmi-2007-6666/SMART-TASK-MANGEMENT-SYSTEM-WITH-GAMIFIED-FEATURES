@@ -116,7 +116,7 @@ def welcome():
     cur = con.cursor()
 
     # Total tasks
-    cur.execute("SELECT COUNT(*) FROM add__task WHERE email=?", (email,))
+    cur.execute("SELECT COUNT(*) FROM adds__task WHERE email=?", (email,))
     total_tasks = cur.fetchone()[0]
 
     # Completed tasks (past)
@@ -142,7 +142,7 @@ def welcome():
 
     # Today's DAILY tasks
     cur.execute("""
-        SELECT taskname, alarm_time
+        SELECT taskname
         FROM dailys_task
         WHERE email=? AND task_date=?
     """, (email, today))
