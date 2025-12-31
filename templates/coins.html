@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Coins</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: 
+                linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url("static/images/addtask.png");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .container {
+            width: 900px;
+            max-width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            color: #fff;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+        }
+
+        .coins-box {
+            text-align: center;
+        }
+
+        .coins-box h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .coin-count {
+            font-size: 70px;
+            font-weight: 700;
+            color: gold;
+            margin: 20px 0;
+        }
+
+        .info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .gift-box h2 {
+            margin-bottom: 15px;
+            font-size: 26px;
+        }
+
+        .gift-box p {
+            font-size: 14px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        form input, form textarea {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        form textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .enabled {
+            background: linear-gradient(135deg, #00ff99, #00ccff);
+            color: #000;
+        }
+
+        .enabled:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 25px rgba(0,255,200,0.6);
+        }
+
+        .disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            grid-column: 1 / -1;
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="alert">
+            {{ messages[0] }}
+        </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- COINS CARD -->
+    <div class="card coins-box">
+        <h1>My Coins</h1>
+        <div class="coin-count">🪙 {{ coins }}</div>
+        <p class="info">
+            Earn coins by completing tasks on time.<br>
+            Reach <b>1000 coins</b> to claim exciting gifts 🎁
+        </p>
+    </div>
+
+    <!-- GIFT FORM -->
+    <div class="card gift-box">
+        <h2>🎁 Claim Your Gift</h2>
+
+        {% if coins >= 1000 %}
+            <p>Congratulations! You are eligible for a gift.</p>
+
+            <form method="POST">
+                <input type="text" name="name" placeholder="Your Full Name" required>
+                <input type="tel" name="phone" placeholder="Mobile Number" required>
+                <textarea name="address" placeholder="Delivery Address" required></textarea>
+
+                <button class="enabled" type="submit">
+                    Submit Gift Request
+                </button>
+            </form>
+        {% else %}
+            <p>You need at least <b>1000 coins</b> to unlock gift rewards.</p>
+
+            <button class="disabled" disabled>
+                Locked 🔒 ({{ 1000 - coins }} coins remaining)
+            </button>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>

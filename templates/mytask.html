@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Tasks</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #ea66d2, #764ba2);
+      padding: 40px;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 32px;
+    }
+
+    h2 {
+      margin: 25px 0 15px;
+      font-size: 24px;
+    }
+
+    .task-card {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      padding: 20px 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .task-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .task-title {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .task-dates {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    .task-desc {
+      margin-top: 10px;
+      opacity: 0.95;
+      line-height: 1.6;
+    }
+
+    .task-footer {
+      margin-top: 15px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .file-btn, .delete-btn, .complete-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .file-btn {
+      background: #4e73df;
+    }
+
+    .file-btn:hover {
+      background: #2e59d9;
+    }
+
+    .delete-btn {
+      background: #e74a3b;
+    }
+
+    .delete-btn:hover {
+      background: #c0392b;
+    }
+
+    .complete-btn {
+      background: #1cc88a;
+    }
+
+    .complete-btn:hover {
+      background: #17a673;
+    }
+
+    .completed-badge {
+      background: #28a745;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .badge {
+      background: #ffcc00;
+      color: #000;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .no-task {
+      text-align: center;
+      font-size: 18px;
+      opacity: 0.9;
+      margin-top: 50px;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 20px;
+      }
+
+      .task-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>My Tasks</h1>
+
+  <!-- ================= NORMAL TASKS ================= -->
+  <h2>📌 Normal Tasks</h2>
+
+  {% if tasks %}
+    {% for t in tasks %}
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-title">{{ t[2] }}</div>
+          <div class="task-dates">{{ t[4] }} → {{ t[5] }}</div>
+        </div>
+
+        <div class="task-desc">{{ t[3] }}</div>
+
+        <div class="task-footer">
+
+          {% if t[6] %}
+            <a class="file-btn"
+               href="{{ url_for('static', filename='uploads/' + t[6]) }}"
+               target="_blank">📎 View</a>
+          {% endif %}
+
+          {% if t[8] == 'pending' %}
+            <a class="complete-btn"
+               href="{{ url_for('complete_task', task_id=t[0]) }}">
+               ✅ Complete
+            </a>
+          {% else %}
+            <span class="completed-badge">
+              ✔ Completed ({{ t[10] }} 🪙)
+            </span>
+          {% endif %}
+
+          <a class="delete-btn"
+             href="{{ url_for('delete_task', task_id=t[0]) }}"
+             onclick="return confirm('Are you sure?')">
+             🗑 Delete
+          </a>
+
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="no-task">No normal tasks 🚫</p>
+  {% endif %}
+
+  <!-- ================= DAILY TASKS ================= -->
+  <h2>⏰ Daily Tasks</h2>
+
+  {% if daily_tasks %}
+    {% for d in daily_tasks %}
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-title">
+            {{ d[2] }}
+            <span class="badge">Daily</span>
+          </div>
+          <div class="task-dates">{{ d[4] }} ⏰ {{ d[5] }}</div>
+        </div>
+
+        <div class="task-desc">{{ d[3] }}</div>
+
+        <div class="task-footer">
+
+          {% if d[6] == 'pending' %}
+            <a class="complete-btn"
+               href="{{ url_for('complete_daily_task', task_id=d[0]) }}">
+               ✅ Complete
+            </a>
+          {% else %}
+            <span class="completed-badge">
+              ✔ Completed ({{ d[8] }} 🪙)
+            </span>
+          {% endif %}
+
+          <a class="delete-btn"
+             href="{{ url_for('delete_daily_task', task_id=d[0]) }}"
+             onclick="return confirm('Delete this daily task?')">
+             🗑 Delete
+          </a>
+
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="no-task">No daily tasks ⏳</p>
+  {% endif %}
+
+</div>
+
+</body>
+</html>

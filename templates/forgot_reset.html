@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>login- advanced task management</title>
+  <style>
+/* ---------- Page Animation ---------- */
+body {
+    animation: fadeIn 1.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ---------- Login Card Animation ---------- */
+.right-panel {
+    animation: slideUp 1s ease forwards;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ---------- Input Focus Animation ---------- */
+input {
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 12px rgba(79, 172, 254, 0.6);
+    transform: scale(1.02);
+}
+
+/* ---------- Button Hover Animation ---------- */
+button {
+    position: relative;
+    overflow: hidden;
+}
+
+button::after {
+    content: "";
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    top: -50%;
+    left: -50%;
+    background: rgba(255, 255, 255, 0.25);
+    transform: rotate(45deg) translateX(-100%);
+    transition: transform 0.5s ease;
+}
+
+button:hover::after {
+    transform: rotate(45deg) translateX(100%);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Flash Message Animation ---------- */
+.success,
+.danger {
+    animation: popIn 0.5s ease-in-out;
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ---------- Link Hover Animation ---------- */
+center a {
+    position: relative;
+}
+
+center a::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: #4facfe;
+    left: 0;
+    bottom: -4px;
+    transition: width 0.3s ease;
+}
+
+center a:hover::after {
+    width: 100%;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background-image: url("static/images/front login img.jpg"); /* change path if needed */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.right-panel {
+    background: #ffffff;
+    width: 380px;
+    padding: 35px 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.right-panel h1 {
+    text-align: center;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.subtitle {
+    text-align: center;
+    color: #777;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #444;
+}
+
+input {
+    width: 100%;
+    padding: 11px;
+    margin-bottom: 18px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #fe4ff5;
+    box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #f84ffe;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: rgb(128, 0, 128);
+}
+
+.success {
+    color: green;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.danger {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+}
+
+center h3 {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #333;
+}
+
+center a {
+    display: inline-block;
+    margin: 5px 10px;
+    text-decoration: none;
+    color: purple;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+center a:hover {
+    text-decoration: underline;
+}
+
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Reset Password</h1>
+
+  {% if message %}
+  <p>{{ message }}</p>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('forgot_reset') }}">
+    <!-- Email Input -->
+    <input type="email" name="email" placeholder="Registered Email"
+           value="{{ email }}" required {% if show_otp_fields %}readonly{% endif %}/>
+
+    <!-- OTP + New Password fields only after sending OTP -->
+    {% if show_otp_fields %}
+      <input type="text" name="otp" placeholder="Enter OTP" required/>
+      <input type="password" name="password" placeholder="New Password" required/>
+      <input type="password" name="confirm_password" placeholder="Confirm Password" required/>
+    {% endif %}
+
+    <button type="submit">
+      {% if show_otp_fields %}Reset Password{% else %}Send OTP{% endif %}
+    </button>
+  </form>
+</div>
+</body>
+</html>

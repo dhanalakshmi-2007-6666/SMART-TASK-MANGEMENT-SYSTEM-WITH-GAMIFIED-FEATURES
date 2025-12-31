@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Dashboard</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:"Poppins",sans-serif;
+    }
+
+    body{
+      background:linear-gradient(135deg,#ea66d2,#764ba2);
+      min-height:100vh;
+      color:#fff;
+    }
+
+    .layout{
+      display:flex;
+      height:100vh;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      width:230px;
+      background:rgba(255,255,255,0.15);
+      backdrop-filter:blur(10px);
+      padding:30px 20px;
+    }
+
+    .sidebar h2{
+      text-align:center;
+      margin-bottom:40px;
+    }
+
+    .sidebar ul{
+      list-style:none;
+    }
+
+    .sidebar ul li{
+      padding:15px;
+      margin-bottom:10px;
+      border-radius:10px;
+    }
+
+    .sidebar ul li:hover,
+    .sidebar ul .active{
+      background:rgba(255,255,255,0.25);
+    }
+
+    .sidebar a{
+      color:#fff;
+      text-decoration:none;
+      display:block;
+    }
+
+    /* Main */
+    .main{
+      flex:1;
+      padding:30px;
+      background:rgba(255,255,255,0.1);
+      backdrop-filter:blur(12px);
+    }
+
+    .top h1{
+      font-size:28px;
+    }
+
+    .top p{
+      opacity:0.85;
+      margin-bottom:30px;
+    }
+
+    /* Stats */
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:20px;
+    }
+
+    .stat{
+      padding:25px;
+      border-radius:20px;
+      text-align:center;
+      font-size:18px;
+    }
+
+    .stat p{
+      font-size:34px;
+      font-weight:bold;
+      margin-top:5px;
+    }
+
+    .blue{background:rgba(78,115,223,0.9);}
+    .green{background:rgba(28,200,138,0.9);}
+    .yellow{background:rgba(246,194,62,0.9);}
+    .red{background:rgba(231,74,59,0.9);}
+
+    /* Tasks */
+    .tasks{
+      margin-top:40px;
+    }
+
+    .tasks h2{
+      margin-bottom:15px;
+    }
+
+    .task{
+      background:rgba(255,255,255,0.2);
+      padding:15px 20px;
+      border-radius:15px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+    }
+
+    .priority{
+      font-weight:bold;
+    }
+
+    .medium{
+      color:#ffd93d;
+    }
+
+    .no-task{
+      opacity:0.85;
+      margin-top:10px;
+    }
+
+    @media(max-width:700px){
+      .layout{
+        flex-direction:column;
+      }
+      .sidebar{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>TaskFlow</h2>
+    <ul>
+      <li class="active">Dashboard</li>
+      <li><a href="{{ url_for('addtask') }}">Add Task</a></li>
+      <li><a href="{{ url_for('mytask') }}">My Tasks</a></li>
+      <li><a href="{{ url_for('add_daily_task') }}">Daily Task</a></li>
+      <li><a href="{{url_for('leaderboard')}}">Analytics</a></li>
+      <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Header -->
+    <div class="top">
+      <h1>Hello, {{ name }} 👋</h1>
+      <p>Track your tasks and stay productive</p>
+    </div>
+
+    <!-- Stats -->
+    <section class="stats">
+      <div class="stat blue">
+        <h3>Total Tasks</h3>
+        <p>{{ total_tasks }}</p>
+      </div>
+
+      <div class="stat green">
+        <h3>Completed</h3>
+        <p>{{ completed }}</p>
+      </div>
+
+      <div class="stat yellow">
+        <h3>Pending</h3>
+        <p>{{ pending }}</p>
+      </div>
+
+      <div class="stat red">
+        <h3>Overdue</h3>
+        <p>{{ overdue }}</p>
+      </div>
+    </section>
+
+    <!-- Today's Tasks -->
+    <section class="tasks">
+      <h2>Today's Daily Tasks</h2>
+
+      {% if today_tasks %}
+        {% for task in today_tasks %}
+          <div class="task">
+            <span>{{ task[0] }}</span>
+            <span class="priority medium">⏰ {{ task[1] }}</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="no-task">No tasks for today 🎉</p>
+      {% endif %}
+    </section>
+
+  </main>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Daily Task</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+    min-height: 100vh;
+    background-image: url("static/images/addtask.png"); /* change path if needed */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .form-container {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 28px;
+    }
+
+    label {
+      font-size: 14px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      margin-bottom: 18px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: none;
+      height: 90px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 25px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      background: #4e73df;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #2e59d9;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .back-link a {
+      color:black;
+      text-decoration: underline;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="form-container">
+    <h1>⏰ Add Daily Task</h1>
+
+    <form method="POST" action="{{ url_for('add_daily_task') }}">
+
+      <label>Task Name</label>
+      <input type="text" name="taskname" placeholder="Enter task title" required>
+
+      <label>Description</label>
+      <textarea name="description" placeholder="Task details..." required></textarea>
+
+      <label>Date</label>
+      <input type="date" name="task_date" required>
+
+      <button type="submit">➕ Add Daily Task</button>
+
+    </form>
+
+    <div class="back-link">
+      <a href="{{ url_for('welcome') }}">⬅ Back to Dashboard</a>
+    </div>
+  </div>
+
+</body>
+</html>
