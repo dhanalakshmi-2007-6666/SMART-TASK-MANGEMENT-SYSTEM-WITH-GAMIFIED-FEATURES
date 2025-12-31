@@ -121,21 +121,21 @@ def welcome():
 
     # Completed tasks (past)
     cur.execute("""
-        SELECT COUNT(*) FROM add__task
+        SELECT COUNT(*) FROM adds__task
         WHERE email=? AND DATE(to_date) < ?
     """, (email, today))
     completed = cur.fetchone()[0]
 
     # Pending tasks (future)
     cur.execute("""
-        SELECT COUNT(*) FROM add__task
+        SELECT COUNT(*) FROM adds__task
         WHERE email=? AND DATE(to_date) >= ?
     """, (email, today))
     pending = cur.fetchone()[0]
 
     # Overdue
     cur.execute("""
-        SELECT COUNT(*) FROM add__task
+        SELECT COUNT(*) FROM adds__task
         WHERE email=? AND DATE(to_date) < ?
     """, (email, today))
     overdue = cur.fetchone()[0]
@@ -143,7 +143,7 @@ def welcome():
     # Today's DAILY tasks
     cur.execute("""
         SELECT taskname, alarm_time
-        FROM daily_task
+        FROM dailys_task
         WHERE email=? AND task_date=?
     """, (email, today))
     today_tasks = cur.fetchall()
