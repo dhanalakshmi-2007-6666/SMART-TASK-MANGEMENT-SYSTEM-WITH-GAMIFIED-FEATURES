@@ -114,33 +114,23 @@ def welcome():
 
     con = sqlite3.connect("task.db")
     cur = con.cursor()
-
-    # Total tasks
     cur.execute("SELECT COUNT(*) FROM adds__task WHERE email=?", (email,))
     total_tasks = cur.fetchone()[0]
-
-    # Completed tasks (past)
     cur.execute("""
         SELECT COUNT(*) FROM adds__task
         WHERE email=? AND DATE(to_date) < ?
     """, (email, today))
     completed = cur.fetchone()[0]
-
-    # Pending tasks (future)
     cur.execute("""
         SELECT COUNT(*) FROM adds__task
         WHERE email=? AND DATE(to_date) >= ?
     """, (email, today))
     pending = cur.fetchone()[0]
-
-    # Overdue
     cur.execute("""
         SELECT COUNT(*) FROM adds__task
         WHERE email=? AND DATE(to_date) < ?
     """, (email, today))
     overdue = cur.fetchone()[0]
-
-    # Today's DAILY tasks
     cur.execute("""
         SELECT taskname
         FROM dailys_task
@@ -360,21 +350,15 @@ def delete_task(task_id):
         return redirect(url_for("login"))
     con = sqlite3.connect("task.db")
     cur = con.cursor()
-
-    # Get filename first
     cur.execute(
         "SELECT filename FROM adds__task WHERE id=? AND email=?",
         (task_id, session['email'])
     )
     row = cur.fetchone()
-
-    # Delete file if exists
     if row and row[0]:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], row[0])
         if os.path.exists(file_path):
             os.remove(file_path)
-
-    # Delete task
     cur.execute(
         "DELETE FROM adds__task WHERE id=? AND email=?",
         (task_id, session['email'])
@@ -390,23 +374,17 @@ def delete_expired_tasks():
 
     con = sqlite3.connect("task.db")
     cur = con.cursor()
-
-    # Get expired tasks with files
     cur.execute("""
         SELECT id, filename FROM adds__task
         WHERE DATE(to_date) < ?
     """, (today,))
 
     expired_tasks = cur.fetchall()
-
-    # Delete files
     for task_id, filename in expired_tasks:
         if filename:
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             if os.path.exists(file_path):
                 os.remove(file_path)
-
-    # Delete expired tasks
     cur.execute("""
         DELETE FROM adds__task
         WHERE DATE(to_date) < ?
@@ -498,8 +476,6 @@ def complete_task(task_id):
 
     con = sqlite3.connect("task.db")
     cur = con.cursor()
-
-    # Get task details
     cur.execute("""
         SELECT taskname, to_date, status
         FROM adds__task
@@ -513,8 +489,6 @@ def complete_task(task_id):
 
     taskname, to_date, _ = task
     to_date = datetime.strptime(to_date, "%Y-%m-%d").date()
-
-    # Coin calculation
     if today < to_date:
         coins = 50
     elif today == to_date:
@@ -522,21 +496,17 @@ def complete_task(task_id):
     else:
         coins = 0
 
-    # Update task
     cur.execute("""
         UPDATE adds__task
         SET status='completed', completed_date=?, earned_coins=?
         WHERE id=? AND email=?
     """, (today, coins, task_id, session['email']))
 
-    # Update user coins
     cur.execute("""
         UPDATE users_main
         SET coins = coins + ?
         WHERE email=?
     """, (coins, session['email']))
-
-    # Insert coin history
     if coins > 0:
         cur.execute("""
             INSERT INTO coin_history (email, task_name, coins, earned_date)
@@ -544,7 +514,6 @@ def complete_task(task_id):
         """, (session['email'], taskname, coins, today))
 
     con.commit()
-    # ✅ Send completion email immediately
     subject = "🎉 Task Completed Successfully"
     body = f"""
     Hi {session['name']},
@@ -609,7 +578,6 @@ def complete_daily_task(task_id):
         """, (session['email'], taskname, coins, today))
 
     con.commit()
-    # ✅ Send completion email
     subject = "✅ Daily Task Completed"
     body = f"""
     Hi {session['name']},
@@ -638,8 +606,6 @@ def coins():
 
     con = sqlite3.connect("task.db")
     cur = con.cursor()
-
-    # ✅ Correct table & column
     cur.execute("SELECT coins FROM users_main WHERE email=?", (session["email"],))
     total_coins = cur.fetchone()[0]
 
@@ -672,7 +638,6 @@ def leaderboard():
     con = sqlite3.connect("task.db")
     cur = con.cursor()
 
-    # Get leaderboard data
     cur.execute("""
         SELECT name, email, coins
         FROM users_main

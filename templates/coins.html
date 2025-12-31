@@ -152,16 +152,16 @@
     <!-- COINS CARD -->
     <div class="card coins-box">
         <h1>My Coins</h1>
-        <div class="coin-count">🪙 {{ coins }}</div>
+        <div class="coin-count">{{ coins }}</div>
         <p class="info">
             Earn coins by completing tasks on time.<br>
-            Reach <b>1000 coins</b> to claim exciting gifts 🎁
+            Reach <b>1000 coins</b> to claim exciting gifts 
         </p>
     </div>
 
     <!-- GIFT FORM -->
     <div class="card gift-box">
-        <h2>🎁 Claim Your Gift</h2>
+        <h2>Claim Your Gift</h2>
 
         {% if coins >= 1000 %}
             <p>Congratulations! You are eligible for a gift.</p>
@@ -179,7 +179,7 @@
             <p>You need at least <b>1000 coins</b> to unlock gift rewards.</p>
 
             <button class="disabled" disabled>
-                Locked 🔒 ({{ 1000 - coins }} coins remaining)
+                Locked  ({{ 1000 - coins }} coins remaining)
             </button>
         {% endif %}
     </div>
