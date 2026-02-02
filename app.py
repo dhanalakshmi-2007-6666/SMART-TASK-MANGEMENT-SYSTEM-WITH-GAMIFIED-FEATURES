@@ -7,15 +7,19 @@ import random
 from datetime import datetime, timedelta
 import os
 from werkzeug.utils import secure_filename
+from ollama_ai import ask_ai
+sqlite3.register_adapter(datetime, lambda val: val.isoformat())
+sqlite3.register_converter("DATETIME", lambda b: datetime.fromisoformat(b.decode()))
+
+
 app = Flask(__name__)
-app.secret_key = "123"
+app.secret_key = "my_super_secret_key_123"
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def init_db():
     con = sqlite3.connect("task.db")
     cur = con.cursor()
-    
     cur.execute('''CREATE TABLE IF NOT EXISTS users_main(
                     email TEXT PRIMARY KEY,
                     password TEXT,
@@ -72,9 +76,47 @@ def init_db():
     status TEXT DEFAULT 'pending'
     )
     ''')
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS chat_history(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT,
+    user_msg TEXT,
+    bot_reply TEXT,
+    time DATETIME
+    )
+    ''')
+
     con.commit()
     con.close()
+def analyze_user(email):
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
 
+    cur.execute("""
+        SELECT taskname, from_date, to_date, completed_date
+        FROM adds__task
+        WHERE email=? AND status='completed'
+        ORDER BY completed_date DESC
+        LIMIT 20
+    """, (email,))
+    tasks = cur.fetchall()
+    con.close()
+
+    if not tasks:
+        return "User has not completed enough tasks yet."
+
+    total_days = 0
+    for t in tasks:
+        start = datetime.strptime(t[1], "%Y-%m-%d")
+        end = datetime.strptime(t[3], "%Y-%m-%d")
+        total_days += (end - start).days
+
+    avg_days = total_days / len(tasks)
+
+    return f"""
+    User recently completed {len(tasks)} tasks.
+    Average completion time: {avg_days:.1f} days.
+    """
 @app.route("/",methods=["GET","POST"])
 def index():
     return render_template("login.html")
@@ -104,6 +146,51 @@ def create():
             flash("Error creating account. Email might already exist.", "danger")
             return redirect(url_for("create"))
     return render_template("create.html")
+# @app.route("/welcome")
+# def welcome():
+#     if 'email' not in session:
+#         return redirect(url_for("login"))
+
+#     email = session['email']
+#     today = datetime.now().date()
+
+#     con = sqlite3.connect("task.db")
+#     cur = con.cursor()
+#     cur.execute("SELECT COUNT(*) FROM adds__task WHERE email=?", (email,))
+#     total_tasks = cur.fetchone()[0]
+#     cur.execute("""
+#         SELECT COUNT(*) FROM adds__task
+#         WHERE email=? AND DATE(to_date) < ?
+#     """, (email, today))
+#     completed = cur.fetchone()[0]
+#     cur.execute("""
+#         SELECT COUNT(*) FROM adds__task
+#         WHERE email=? AND DATE(to_date) >= ?
+#     """, (email, today))
+#     pending = cur.fetchone()[0]
+#     cur.execute("""
+#         SELECT COUNT(*) FROM adds__task
+#         WHERE email=? AND DATE(to_date) < ?
+#     """, (email, today))
+#     overdue = cur.fetchone()[0]
+#     cur.execute("""
+#         SELECT taskname
+#         FROM dailys_task
+#         WHERE email=? AND task_date=?
+#     """, (email, today))
+#     today_tasks = cur.fetchall()
+
+#     con.close()
+
+#     return render_template(
+#         "welcome.html",
+#         name=session['name'],
+#         total_tasks=total_tasks,
+#         completed=completed,
+#         pending=pending,
+#         overdue=overdue,
+#         today_tasks=today_tasks
+#     )
 @app.route("/welcome")
 def welcome():
     if 'email' not in session:
@@ -114,28 +201,32 @@ def welcome():
 
     con = sqlite3.connect("task.db")
     cur = con.cursor()
+
+    # Total
     cur.execute("SELECT COUNT(*) FROM adds__task WHERE email=?", (email,))
     total_tasks = cur.fetchone()[0]
-    cur.execute("""
-        SELECT COUNT(*) FROM adds__task
-        WHERE email=? AND DATE(to_date) < ?
-    """, (email, today))
+
+    # Completed
+    cur.execute("SELECT COUNT(*) FROM adds__task WHERE email=? AND status='completed'", (email,))
     completed = cur.fetchone()[0]
-    cur.execute("""
-        SELECT COUNT(*) FROM adds__task
-        WHERE email=? AND DATE(to_date) >= ?
-    """, (email, today))
+
+    # Pending
+    cur.execute("""SELECT COUNT(*) FROM adds__task
+                   WHERE email=? AND status='pending' AND DATE(to_date)>=?""",
+                (email, today))
     pending = cur.fetchone()[0]
-    cur.execute("""
-        SELECT COUNT(*) FROM adds__task
-        WHERE email=? AND DATE(to_date) < ?
-    """, (email, today))
+
+    # Overdue
+    cur.execute("""SELECT COUNT(*) FROM adds__task
+                   WHERE email=? AND status='pending' AND DATE(to_date)<?""",
+                (email, today))
     overdue = cur.fetchone()[0]
-    cur.execute("""
-        SELECT taskname
-        FROM dailys_task
-        WHERE email=? AND task_date=?
-    """, (email, today))
+
+    # Today daily tasks
+    cur.execute("""SELECT taskname, task_date
+                   FROM dailys_task
+                   WHERE email=? AND task_date=?""",
+                (email, today))
     today_tasks = cur.fetchall()
 
     con.close()
@@ -149,6 +240,7 @@ def welcome():
         overdue=overdue,
         today_tasks=today_tasks
     )
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -652,6 +744,39 @@ def leaderboard():
         leaderboard=leaderboard_data,
         current_email=session["email"]
     )
+# @app.route('/chatbot', methods=['POST'])
+# def ask_ai_route():
+#     user_msg = request.json['message']
+
+#     # You can add user analytics here later
+#     reply = ask_ai(user_msg)
+
+#     return jsonify({"reply": reply})
+@app.route('/chatbot', methods=['POST'])
+def ask_ai_route():
+    if 'email' not in session:
+        return jsonify({"reply": "Login required"})
+
+    user_msg = request.json['message']
+
+    try:
+        reply = ask_ai(user_msg)
+    except Exception as e:
+        print("Ollama error:", e)
+        reply = "AI not responding. Check Ollama."
+
+    # Store chat history
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+    cur.execute("""
+        INSERT INTO chat_history (email, user_msg, bot_reply, time)
+        VALUES (?,?,?,?)
+    """, (session['email'], user_msg, reply, datetime.now()))
+    con.commit()
+    con.close()
+
+    return jsonify({"reply": reply})
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)

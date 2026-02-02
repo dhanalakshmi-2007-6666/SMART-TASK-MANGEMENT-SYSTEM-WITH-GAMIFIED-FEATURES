@@ -1,153 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Task Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Task Dashboard</title>
 
-  <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:"Poppins",sans-serif;
-    }
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Poppins",sans-serif;
+}
 
-    body{
-      background:linear-gradient(135deg,#ea66d2,#764ba2);
-      min-height:100vh;
-      color:#fff;
-    }
+body{
+  background:linear-gradient(135deg,#ea66d2,#764ba2);
+  min-height:100vh;
+  color:#fff;
+}
 
-    .layout{
-      display:flex;
-      height:100vh;
-    }
+.layout{
+  display:flex;
+  height:100vh;
+}
 
-    /* Sidebar */
-    .sidebar{
-      width:230px;
-      background:rgba(255,255,255,0.15);
-      backdrop-filter:blur(10px);
-      padding:30px 20px;
-    }
+/* Sidebar */
+.sidebar{
+  width:230px;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(10px);
+  padding:30px 20px;
+}
 
-    .sidebar h2{
-      text-align:center;
-      margin-bottom:40px;
-    }
+.sidebar h2{
+  text-align:center;
+  margin-bottom:40px;
+}
 
-    .sidebar ul{
-      list-style:none;
-    }
+.sidebar ul{
+  list-style:none;
+}
 
-    .sidebar ul li{
-      padding:15px;
-      margin-bottom:10px;
-      border-radius:10px;
-    }
+.sidebar ul li{
+  padding:15px;
+  margin-bottom:10px;
+  border-radius:10px;
+}
 
-    .sidebar ul li:hover,
-    .sidebar ul .active{
-      background:rgba(255,255,255,0.25);
-    }
+.sidebar ul li:hover,
+.sidebar ul .active{
+  background:rgba(255,255,255,0.25);
+}
 
-    .sidebar a{
-      color:#fff;
-      text-decoration:none;
-      display:block;
-    }
+.sidebar a{
+  color:#fff;
+  text-decoration:none;
+  display:block;
+}
 
-    /* Main */
-    .main{
-      flex:1;
-      padding:30px;
-      background:rgba(255,255,255,0.1);
-      backdrop-filter:blur(12px);
-    }
+/* Main */
+.main{
+  flex:1;
+  padding:30px;
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(12px);
+}
 
-    .top h1{
-      font-size:28px;
-    }
+.top h1{
+  font-size:28px;
+}
 
-    .top p{
-      opacity:0.85;
-      margin-bottom:30px;
-    }
+.top p{
+  opacity:0.85;
+  margin-bottom:30px;
+}
 
-    /* Stats */
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-      gap:20px;
-    }
+/* Stats */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:20px;
+}
 
-    .stat{
-      padding:25px;
-      border-radius:20px;
-      text-align:center;
-      font-size:18px;
-    }
+.stat{
+  padding:25px;
+  border-radius:20px;
+  text-align:center;
+  font-size:18px;
+}
 
-    .stat p{
-      font-size:34px;
-      font-weight:bold;
-      margin-top:5px;
-    }
+.stat p{
+  font-size:34px;
+  font-weight:bold;
+  margin-top:5px;
+}
 
-    .blue{background:rgba(78,115,223,0.9);}
-    .green{background:rgba(28,200,138,0.9);}
-    .yellow{background:rgba(246,194,62,0.9);}
-    .red{background:rgba(231,74,59,0.9);}
+.blue{background:rgba(78,115,223,0.9);}
+.green{background:rgba(28,200,138,0.9);}
+.yellow{background:rgba(246,194,62,0.9);}
+.red{background:rgba(231,74,59,0.9);}
 
-    /* Tasks */
-    .tasks{
-      margin-top:40px;
-    }
+.tasks{
+  margin-top:40px;
+}
 
-    .tasks h2{
-      margin-bottom:15px;
-    }
+.task{
+  background:rgba(255,255,255,0.2);
+  padding:15px 20px;
+  border-radius:15px;
+  margin-bottom:10px;
+}
 
-    .task{
-      background:rgba(255,255,255,0.2);
-      padding:15px 20px;
-      border-radius:15px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:10px;
-    }
+/* ===== MODERN AI CHAT ===== */
 
-    .priority{
-      font-weight:bold;
-    }
+.chat-toggle{
+  position:fixed;
+  bottom:25px;
+  right:25px;
+  width:65px;
+  height:65px;
+  border-radius:50%;
+  background:#ffffff;
+  color:#764ba2;
+  font-size:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(0,0,0,0.4);
+  z-index:1000;
+}
 
-    .medium{
-      color:#ffd93d;
-    }
+.chat-window{
+  position:fixed;
+  bottom:100px;
+  right:25px;
+  width:380px;
+  height:520px;
+  background:#fff;
+  border-radius:25px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+  z-index:1000;
+}
 
-    .no-task{
-      opacity:0.85;
-      margin-top:10px;
-    }
+.chat-window.show{ display:flex; }
 
-    @media(max-width:700px){
-      .layout{
-        flex-direction:column;
-      }
-      .sidebar{
-        width:100%;
-      }
-    }
-  </style>
+.chat-header{
+  background:linear-gradient(45deg,#764ba2,#667eea);
+  color:#fff;
+  padding:15px;
+  font-size:18px;
+  text-align:center;
+  font-weight:bold;
+}
+
+.chat-body{
+  flex:1;
+  padding:15px;
+  overflow-y:auto;
+  background:#f6f6f6;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.msg{
+  padding:10px 14px;
+  border-radius:15px;
+  max-width:80%;
+  font-size:14px;
+}
+
+.user{
+  align-self:flex-end;
+  background:#764ba2;
+  color:#fff;
+}
+
+.ai{
+  align-self:flex-start;
+  background:#e4e6eb;
+  color:#333;
+  font-style:italic;
+}
+
+.chat-input{
+  display:flex;
+  border-top:1px solid #ddd;
+}
+
+.chat-input input{
+  flex:1;
+  border:none;
+  padding:12px;
+  outline:none;
+}
+
+.chat-input button{
+  border:none;
+  padding:12px 18px;
+  background:#764ba2;
+  color:#fff;
+  cursor:pointer;
+}
+</style>
 </head>
 
 <body>
 
 <div class="layout">
 
-  <!-- Sidebar -->
   <aside class="sidebar">
     <h2>TaskFlow</h2>
     <ul>
@@ -161,57 +226,92 @@
     </ul>
   </aside>
 
-  <!-- Main -->
   <main class="main">
-
-    <!-- Header -->
     <div class="top">
       <h1>Hello, {{ name }} 👋</h1>
       <p>Track your tasks and stay productive</p>
     </div>
 
-    <!-- Stats -->
     <section class="stats">
-      <div class="stat blue">
-        <h3>Total Tasks</h3>
-        <p>{{ total_tasks }}</p>
-      </div>
-
-      <div class="stat green">
-        <h3>Completed</h3>
-        <p>{{ completed }}</p>
-      </div>
-
-      <div class="stat yellow">
-        <h3>Pending</h3>
-        <p>{{ pending }}</p>
-      </div>
-
-      <div class="stat red">
-        <h3>Overdue</h3>
-        <p>{{ overdue }}</p>
-      </div>
+      <div class="stat blue"><h3>Total Tasks</h3><p>{{ total_tasks }}</p></div>
+      <div class="stat green"><h3>Completed</h3><p>{{ completed }}</p></div>
+      <div class="stat yellow"><h3>Pending</h3><p>{{ pending }}</p></div>
+      <div class="stat red"><h3>Overdue</h3><p>{{ overdue }}</p></div>
     </section>
 
-    <!-- Today's Tasks -->
     <section class="tasks">
       <h2>Today's Daily Tasks</h2>
-
       {% if today_tasks %}
         {% for task in today_tasks %}
           <div class="task">
             <span>{{ task[0] }}</span>
-            <span class="priority medium">⏰ {{ task[1] }}</span>
           </div>
         {% endfor %}
       {% else %}
         <p class="no-task">No tasks for today 🎉</p>
       {% endif %}
     </section>
-
   </main>
-
 </div>
+
+<!-- AI CHAT -->
+<div class="chat-toggle" onclick="toggleChat()">🤖</div>
+
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">AI Task Coach</div>
+  <div class="chat-body" id="chatBody"></div>
+
+  <div class="chat-input">
+    <input type="text" id="userMsg" placeholder="Ask something about your tasks...">
+    <button onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+function toggleChat(){
+  document.getElementById("chatWindow").classList.toggle("show");
+}
+
+function addMessage(text, type, id=null){
+  const body = document.getElementById("chatBody");
+  const div = document.createElement("div");
+  div.className = "msg " + type;
+  if(id) div.id = id;
+  div.innerText = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function sendMessage(){
+  let msg = document.getElementById("userMsg").value.trim();
+  if(msg==="") return;
+
+  addMessage(msg, "user");
+  document.getElementById("userMsg").value="";
+
+  // Thinking bubble just under user message
+  addMessage("AI is thinking...", "ai", "thinkingBubble");
+
+  fetch("/chatbot",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:msg})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    let thinking = document.getElementById("thinkingBubble");
+    if(thinking) thinking.remove();
+
+    addMessage(data.reply || "No response", "ai");
+  });
+}
+
+document.getElementById("userMsg").addEventListener("keypress", function(e){
+  if(e.key === "Enter"){
+    sendMessage();
+  }
+});
+</script>
 
 </body>
 </html>
