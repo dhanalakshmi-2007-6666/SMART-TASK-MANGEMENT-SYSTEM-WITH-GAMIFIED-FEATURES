@@ -5,13 +5,18 @@ import smtplib
 from email.message import EmailMessage
 import random
 from datetime import datetime, timedelta
+import joblib
 import os
 from werkzeug.utils import secure_filename
 from ollama_ai import ask_ai
 sqlite3.register_adapter(datetime, lambda val: val.isoformat())
 sqlite3.register_converter("DATETIME", lambda b: datetime.fromisoformat(b.decode()))
-
-
+try:
+    ML_MODEL = joblib.load("delay_predictor.pkl")
+    print("ML model loaded")
+except:
+    ML_MODEL = None
+    print("ML model not found")
 app = Flask(__name__)
 app.secret_key = "my_super_secret_key_123"
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
@@ -383,8 +388,26 @@ def addtask():
         desc = request.form["des"]
         fdate = request.form["fdate"]
         tdate = request.form["tdate"]
-        email = session['email']   # 👈 IMPORTANT
+        email = session['email']
 
+        # 🔮 ML Delay Prediction BEFORE saving task
+        try:
+            model = joblib.load("delay_predictor.pkl")
+
+            duration = (datetime.strptime(tdate, "%Y-%m-%d") -
+                        datetime.strptime(fdate, "%Y-%m-%d")).days
+            # 🔮 Calculate task duration
+            duration = (datetime.strptime(tdate, "%Y-%m-%d") -
+            datetime.strptime(fdate, "%Y-%m-%d")).days
+            if ML_MODEL:
+                prediction = ML_MODEL.predict([[duration, 0]])
+                if prediction[0] == 1:
+                    flash("⚠️ You usually delay tasks like this. Consider reducing duration.", "warning")
+
+        except Exception as e:
+            print("ML prediction error:", e)
+
+        # 📁 File upload handling
         file = request.files.get('myfile')
         filename = None
         filetype = None
@@ -394,6 +417,7 @@ def addtask():
             filetype = file.content_type
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
+        # 💾 Save task into DB
         con = sqlite3.connect("task.db")
         cur = con.cursor()
         cur.execute("""
@@ -404,6 +428,8 @@ def addtask():
 
         con.commit()
         con.close()
+
+        # 📧 Send confirmation email
         subject = "Task Added Successfully"
         body = f"""
         Hi {session['name']},
@@ -421,6 +447,7 @@ def addtask():
         return redirect(url_for("welcome"))
 
     return render_template("addtask.html")
+
 @app.route("/mytask")
 def mytask():
     if 'email' not in session:
