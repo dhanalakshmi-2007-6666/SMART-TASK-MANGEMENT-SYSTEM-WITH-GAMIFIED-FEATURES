@@ -85,6 +85,14 @@ def init_db():
     time DATETIME
     )
     ''')
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS user_energy(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT,
+    energy TEXT,
+    date DATE
+    )
+    ''')
 
     con.commit()
     con.close()
@@ -256,7 +264,7 @@ def login():
         if row:
             session['email'] = row[0]
             session['name'] = row[4]
-            return redirect(url_for("welcome"))
+            return redirect(url_for("energy_check"))
         else:
             flash("Invalid username or password.", "danger")
 
@@ -417,11 +425,33 @@ def addtask():
 def mytask():
     if 'email' not in session:
         return redirect(url_for("login"))
-    send_deadline_reminders()
+
+    energy = session.get('energy')
+
     con = sqlite3.connect("task.db")
     cur = con.cursor()
 
-    cur.execute("SELECT * FROM adds__task WHERE email=?", (session['email'],))
+    if energy == "Low":
+        cur.execute("""
+            SELECT * FROM adds__task
+            WHERE email=? AND status='pending'
+            ORDER BY to_date ASC
+            LIMIT 3
+        """, (session['email'],))
+    elif energy == "Medium":
+        cur.execute("""
+            SELECT * FROM adds__task
+            WHERE email=? AND status='pending'
+            ORDER BY to_date ASC
+            LIMIT 6
+        """, (session['email'],))
+    else:
+        cur.execute("""
+            SELECT * FROM adds__task
+            WHERE email=? AND status='pending'
+            ORDER BY to_date ASC
+        """, (session['email'],))
+
     tasks = cur.fetchall()
 
     cur.execute("SELECT * FROM dailys_task WHERE email=?", (session['email'],))
@@ -429,8 +459,10 @@ def mytask():
 
     con.close()
 
-    return render_template("mytask.html", tasks=tasks, daily_tasks=daily_tasks)
-
+    return render_template("mytask.html",
+                           tasks=tasks,
+                           daily_tasks=daily_tasks,
+                           energy=energy)
 @app.route("/back")
 def back():
     if 'email' not in session:
@@ -776,7 +808,60 @@ def ask_ai_route():
     con.close()
 
     return jsonify({"reply": reply})
+@app.route("/energy-check")
+def energy_check():
+    if 'email' not in session:
+        return redirect(url_for("login"))
+    return render_template("energy.html")
+@app.route("/set-energy", methods=["POST"])
+def set_energy():
+    if 'email' not in session:
+        return redirect(url_for("login"))
 
+    energy = request.form['energy']
+    today = datetime.now().date()
+
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+    cur.execute("""
+        INSERT INTO user_energy (email, energy, date)
+        VALUES (?,?,?)
+    """, (session['email'], energy, today))
+    con.commit()
+    con.close()
+
+    session['energy'] = energy
+
+    return redirect(url_for("welcome"))
+@app.route("/alltasks")
+def alltasks():
+    if 'email' not in session:
+        return redirect(url_for("login"))
+
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT * FROM adds__task
+        WHERE email=?
+        ORDER BY to_date ASC
+    """, (session['email'],))
+
+    tasks = cur.fetchall()
+
+    cur.execute("""
+        SELECT * FROM dailys_task
+        WHERE email=?
+        ORDER BY task_date ASC
+    """, (session['email'],))
+
+    daily_tasks = cur.fetchall()
+
+    con.close()
+
+    return render_template("alltasks.html",
+                           tasks=tasks,
+                           daily_tasks=daily_tasks)
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
