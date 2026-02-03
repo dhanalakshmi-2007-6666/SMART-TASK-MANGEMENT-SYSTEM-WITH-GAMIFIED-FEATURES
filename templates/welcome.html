@@ -240,6 +240,15 @@ body{
     </section>
 
     <section class="tasks">
+      {% if warning %}
+<div style="background:#ffdddd;padding:15px;border-radius:8px;margin-bottom:15px;">
+    ⚠️ {{ warning }}
+    <br><br>
+    <a href="/suggest_shift" style="background:red;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;">
+        Suggest a task to move
+    </a>
+</div>
+{% endif %}
       <h2>Today's Daily Tasks</h2>
       {% if today_tasks %}
         {% for task in today_tasks %}

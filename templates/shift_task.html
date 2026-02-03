@@ -1,0 +1,9 @@
+<h3>Recommended Task to Move</h3>
+
+{% if task %}
+<p><b>{{ task[1] }}</b> (Due today)</p>
+
+<a href="/move_task/{{ task[0] }}">Move to Tomorrow</a>
+{% else %}
+<p>No task to move.</p>
+{% endif %}

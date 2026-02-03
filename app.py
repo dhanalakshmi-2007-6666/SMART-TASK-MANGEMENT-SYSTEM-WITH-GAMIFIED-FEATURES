@@ -243,6 +243,10 @@ def welcome():
     today_tasks = cur.fetchall()
 
     con.close()
+    overloaded, hours, limit = cognitive_load_check(email)
+    warning = None
+    if overloaded:
+        warning = f"You have heavy workload today ({hours} hrs). We recommend moving 1 task to tomorrow."
 
     return render_template(
         "welcome.html",
@@ -251,7 +255,8 @@ def welcome():
         completed=completed,
         pending=pending,
         overdue=overdue,
-        today_tasks=today_tasks
+        today_tasks=today_tasks,
+        warning=warning
     )
 
 @app.route("/login", methods=["GET", "POST"])
@@ -389,7 +394,7 @@ def addtask():
         fdate = request.form["fdate"]
         tdate = request.form["tdate"]
         email = session['email']
-
+        hours = request.form["hours"]
         # 🔮 ML Delay Prediction BEFORE saving task
         try:
             model = joblib.load("delay_predictor.pkl")
@@ -422,9 +427,9 @@ def addtask():
         cur = con.cursor()
         cur.execute("""
             INSERT INTO adds__task
-            (email, taskname, des, from_date, to_date, filename, filetype)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (email, taskname, desc, fdate, tdate, filename, filetype))
+            (email, taskname, des, from_date, to_date,est_hours,filename, filetype)
+            VALUES (?, ?, ?, ?, ?, ?, ?,?)
+        """, (email, taskname, desc, fdate, tdate,hours,filename, filetype))
 
         con.commit()
         con.close()
@@ -889,6 +894,85 @@ def alltasks():
     return render_template("alltasks.html",
                            tasks=tasks,
                            daily_tasks=daily_tasks)
+def cognitive_load_check(email):
+    today = datetime.now().date()
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+
+    # Get today energy
+    cur.execute("""
+        SELECT energy FROM user_energy
+        WHERE email=? AND date=?
+    """, (email, today))
+    row = cur.fetchone()
+    energy = row[0] if row else "Medium"
+
+    # Get today's tasks and hours
+    cur.execute("""
+        SELECT COUNT(*), SUM(est_hours)
+        FROM adds__task
+        WHERE email=? AND status='pending' AND DATE(to_date)=?
+    """, (email, today))
+
+    count, total_hours = cur.fetchone()
+    total_hours = total_hours or 0
+
+    con.close()
+
+    # Threshold based on energy
+    if energy == "Low":
+        limit = 3
+    elif energy == "Medium":
+        limit = 6
+    else:
+        limit = 9
+
+    overloaded = total_hours > limit
+
+    return overloaded, total_hours, limit
+@app.route("/suggest_shift")
+def suggest_shift():
+    if 'email' not in session:
+        return redirect(url_for("login"))
+
+    today = datetime.now().date()
+
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+
+    # Suggest the lowest priority (farthest deadline)
+    cur.execute("""
+        SELECT id, taskname, to_date
+        FROM adds__task
+        WHERE email=? AND status='pending' AND DATE(to_date)=?
+        ORDER BY to_date DESC
+        LIMIT 1
+    """, (session['email'], today))
+
+    task = cur.fetchone()
+    con.close()
+
+    return render_template("shift_task.html", task=task)
+@app.route("/move_task/<int:task_id>")
+def move_task(task_id):
+    if 'email' not in session:
+        return redirect(url_for("login"))
+
+    tomorrow = datetime.now().date() + timedelta(days=1)
+
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+    cur.execute("""
+        UPDATE adds__task
+        SET to_date=?
+        WHERE id=? AND email=?
+    """, (tomorrow, task_id, session['email']))
+
+    con.commit()
+    con.close()
+
+    flash("Task moved to tomorrow to reduce overload ✅", "success")
+    return redirect(url_for("welcome"))
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
