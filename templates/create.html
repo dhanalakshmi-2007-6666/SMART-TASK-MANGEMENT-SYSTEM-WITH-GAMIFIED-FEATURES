@@ -3,262 +3,239 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>login- advanced task management</title>
+  <title>Create Account</title>
+
   <style>
-    
-/* ---------- Page Animation ---------- */
-body {
-    animation: fadeIn 1.2s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.98);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
     }
-    to {
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      background:
+        radial-gradient(circle at 20% 10%, #1e293b 0%, transparent 40%),
+        radial-gradient(circle at 80% 90%, #0f766e 0%, transparent 35%),
+        #020617;
+
+      color: #e5e7eb;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.97);
+      }
+      to {
         opacity: 1;
         transform: scale(1);
+      }
     }
-}
 
-/* ---------- Login Card Animation ---------- */
-.right-panel {
-    animation: slideUp 1s ease forwards;
-}
+    .right-panel {
+      width: 420px;
+      padding: 35px 32px;
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      backdrop-filter: blur(14px);
+
+      border-radius: 22px;
+
+      box-shadow:
+        0 10px 25px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+
+      transition: all 0.3s ease;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    .right-panel:hover {
+      transform: translateY(-6px);
+      border-color: #38bdf8;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.65);
     }
-}
 
-/* ---------- Input Focus Animation ---------- */
-input {
-    transition: all 0.3s ease;
-}
-
-input:focus {
-    border-color: #4facfe;
-    box-shadow: 0 0 12px rgba(79, 172, 254, 0.6);
-    transform: scale(1.02);
-}
-
-/* ---------- Button Hover Animation ---------- */
-button {
-    position: relative;
-    overflow: hidden;
-}
-
-button::after {
-    content: "";
-    position: absolute;
-    width: 120%;
-    height: 120%;
-    top: -50%;
-    left: -50%;
-    background: rgba(255, 255, 255, 0.25);
-    transform: rotate(45deg) translateX(-100%);
-    transition: transform 0.5s ease;
-}
-
-button:hover::after {
-    transform: rotate(45deg) translateX(100%);
-}
-
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
-}
-
-/* ---------- Flash Message Animation ---------- */
-.success,
-.danger {
-    animation: popIn 0.5s ease-in-out;
-}
-
-@keyframes popIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
+    .right-panel h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
     }
-    to {
-        opacity: 1;
-        transform: scale(1);
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 25px;
+      line-height: 1.5;
     }
-}
 
-/* ---------- Link Hover Animation ---------- */
-center a {
-    position: relative;
-}
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #cbd5e1;
+    }
 
-center a::after {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 2px;
-    background: #4facfe;
-    left: 0;
-    bottom: -4px;
-    transition: width 0.3s ease;
-}
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 18px;
 
-center a:hover::after {
-    width: 100%;
-}
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
 
-body {
-    min-height: 100vh;
-    background-image: url("static/images/front login img.jpg"); /* change path if needed */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.right-panel {
-    background: #ffffff;
-    width: 380px;
-    padding: 35px 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
+      background: rgba(255,255,255,0.04);
+      color: #fff;
 
-.right-panel h1 {
-    text-align: center;
-    margin-bottom: 5px;
-    color: #333;
-}
+      font-size: 14px;
+      outline: none;
+      transition: 0.25s;
+    }
 
-.subtitle {
-    text-align: center;
-    color: #777;
-    margin-bottom: 25px;
-    font-size: 14px;
-}
+    input::placeholder {
+      color: #6b7280;
+    }
 
-label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    color: #444;
-}
+    select option {
+      background: #020617;
+      color: white;
+    }
 
-input {
-    width: 100%;
-    padding: 11px;
-    margin-bottom: 18px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: 0.3s;
-}
+    input:focus, select:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56,189,248,0.55);
+      transform: scale(1.015);
+    }
 
-input:focus {
-    outline: none;
-    border-color: #fe4ff5;
-    box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
-}
+    button {
+      width: 100%;
+      padding: 12px;
 
-button {
-    width: 100%;
-    padding: 12px;
-    background: #f84ffe;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
+      border: none;
+      border-radius: 16px;
 
-button:hover {
-    background: rgb(128, 0, 128);
-}
+      font-size: 15px;
+      font-weight: 700;
 
-.success {
-    color: green;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 10px;
-}
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: white;
 
-.danger {
-    color: red;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 10px;
-}
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
 
-center h3 {
-    margin-top: 20px;
-    font-size: 14px;
-    color: #333;
-}
+    button::after {
+      content: "";
+      position: absolute;
+      width: 120%;
+      height: 120%;
+      top: -50%;
+      left: -50%;
+      background: rgba(255,255,255,0.25);
+      transform: rotate(45deg) translateX(-100%);
+      transition: transform 0.5s ease;
+    }
 
-center a {
-    display: inline-block;
-    margin: 5px 10px;
-    text-decoration: none;
-    color: purple;
-    font-weight: 600;
-    font-size: 14px;
-}
+    button:hover::after {
+      transform: rotate(45deg) translateX(100%);
+    }
 
-center a:hover {
-    text-decoration: underline;
-}
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.6);
+    }
 
+    p.password-note {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 18px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .success {
+      margin-top: 12px;
+      text-align: center;
+      font-weight: 600;
+      color: #4ade80;
+    }
+
+    .danger {
+      margin-top: 12px;
+      text-align: center;
+      font-weight: 600;
+      color: #f87171;
+    }
+
+    @media(max-width: 600px) {
+      .right-panel {
+        width: 90%;
+        padding: 25px;
+      }
+    }
   </style>
 </head>
+
 <body>
-    <div class="right-panel">
-      <h1>CREATE ACCOUNT</h1>
-      <p class="subtitle">Small tasks completed today build big success tomorrow</p>
-      <form method="POST" action="{{url_for('create')}}">
-        <label for="name">NAME</label>
-        <input type="text" id="name" name="name" required/>
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="you@example.com" required />
-        <label for="mobile">Mobile</label>
-        <input type="number" id="mobile" name="mobile" placeholder="1234567890" required/>
-        <label for="gender">Gender</label>
-        <select id="gender" name="gender" required>
-          <option value="">Select Role</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="others">Others</option>
-        </select>
-        <br><br>
-        <label>Password</label>
-<input type="password" name="password" required>
-<label>Confirm Password</label>
-<input type="password" name="confirmpassword" required>
-        <p>The password must contain atleast one special character,lowercase,uppercase with password length of 10.</p>
-        <br><br>
-        <button type="submit">Submit</button>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <p class="{{ category }}">{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-      </form>
-    </div>
+  <div class="right-panel">
+    <h1>CREATE ACCOUNT</h1>
+    <p class="subtitle">Small tasks completed today build big success tomorrow</p>
+
+    <form method="POST" action="{{url_for('create')}}">
+
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" required />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email"
+             placeholder="you@example.com" required />
+
+      <label for="mobile">Mobile</label>
+      <input type="number" id="mobile" name="mobile"
+             placeholder="1234567890" required />
+
+      <label for="gender">Gender</label>
+      <select id="gender" name="gender" required>
+        <option value="">Select Gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="others">Others</option>
+      </select>
+
+      <label>Password</label>
+      <input type="password" name="password" required />
+
+      <label>Confirm Password</label>
+      <input type="password" name="confirmpassword" required />
+
+      <p class="password-note">
+        Password must contain at least one special character,
+        lowercase, uppercase, and length of 10.
+      </p>
+
+      <button type="submit">Submit</button>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <p class="{{ category }}">{{ message }}</p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+    </form>
+  </div>
 </body>
 </html>
