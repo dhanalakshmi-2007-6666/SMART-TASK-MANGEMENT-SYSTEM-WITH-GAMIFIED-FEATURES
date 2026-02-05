@@ -1,218 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Task Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Dashboard</title>
 
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:"Poppins",sans-serif;
-}
+  <style>
+    .card {
+  animation: float 4s ease-in-out infinite;
+    }
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:"Poppins",sans-serif;
+    }
 
-body{
-  background:linear-gradient(135deg,#ea66d2,#764ba2);
+    body{
+      background:linear-gradient(135deg,#efbbe5,#b181e1);
+      min-height:100vh;
+      color:#fff;
+    }
+
+    .layout{
+      display:flex;
+      height:100vh;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      width:230px;
+      background:rgba(255,255,255,0.15);
+      backdrop-filter:blur(10px);
+      padding:30px 20px;
+    }
+
+    .sidebar h2{
+      text-align:center;
+      margin-bottom:40px;
+    }
+
+    .sidebar ul{
+      list-style:none;
+    }
+
+    .sidebar ul li{
+      padding:15px;
+      margin-bottom:10px;
+      border-radius:10px;
+    }
+
+    .sidebar ul li:hover,
+    .sidebar ul .active{
+      background:rgba(255,255,255,0.25);
+    }
+
+    .sidebar a{
+      color:#fff;
+      text-decoration:none;
+      display:block;
+    }
+
+    /* Main */
+    .main{
+      flex:1;
+      padding:30px;
+      background:rgba(255,255,255,0.1);
+      backdrop-filter:blur(12px);
+    }
+
+    .top h1{
+      font-size:28px;
+    }
+
+    .top p{
+      opacity:0.85;
+      margin-bottom:30px;
+    }
+
+    /* Stats */
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:20px;
+    }
+
+    .stat{
+      padding:25px;
+      border-radius:20px;
+      text-align:center;
+      font-size:18px;
+    }
+
+    .stat p{
+      font-size:34px;
+      font-weight:bold;
+      margin-top:5px;
+    }
+
+    .blue{background:rgba(154, 174, 233, 0.9);}
+    .green{background:rgba(155, 219, 196, 0.9);}
+    .yellow{background:rgba(220, 199, 144, 0.9);}
+    .red{background:rgba(234, 160, 154, 0.9);}
+    
+    .tasks{
+      margin-top:40px;
+    }
+
+    .tasks h2{
+      margin-bottom:15px;
+    }
+
+    .task{
+      background:rgba(255,255,255,0.2);
+      padding:15px 20px;
+      border-radius:15px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+    }
+
+    .priority{
+      font-weight:bold;
+    }
+
+    .medium{
+      color:#ffd93d;
+    }
+
+    .no-task{
+      opacity:0.85;
+      margin-top:10px;
+    }
+
+    @media(max-width:700px){
+      .layout{
+        flex-direction:column;
+      }
+      .sidebar{
+        width:100%;
+      }
+    }
+
+    body{
   min-height:100vh;
-  color:#fff;
+  background:
+    radial-gradient(circle at 20% 10%, #1e293b 0%, transparent 40%),
+    radial-gradient(circle at 80% 90%, #0f766e 0%, transparent 35%),
+    #020617;
+  color:#e5e7eb;
 }
-
-.layout{
-  display:flex;
-  height:100vh;
-}
-
-/* Sidebar */
 .sidebar{
   width:230px;
-  background:rgba(255,255,255,0.15);
-  backdrop-filter:blur(10px);
-  padding:30px 20px;
+  background:#020617;
+  border-right:1px solid rgba(255,255,255,0.06);
 }
 
 .sidebar h2{
-  text-align:center;
-  margin-bottom:40px;
-}
-
-.sidebar ul{
-  list-style:none;
-}
-
-.sidebar ul li{
-  padding:15px;
-  margin-bottom:10px;
-  border-radius:10px;
-}
-
-.sidebar ul li:hover,
-.sidebar ul .active{
-  background:rgba(255,255,255,0.25);
-}
-
-.sidebar a{
   color:#fff;
-  text-decoration:none;
-  display:block;
+  letter-spacing:1px;
+}
+.sidebar ul li{
+  border-radius:10px;
+  transition:all 0.25s ease;
 }
 
-/* Main */
-.main{
-  flex:1;
-  padding:30px;
-  background:rgba(255,255,255,0.1);
-  backdrop-filter:blur(12px);
+.sidebar ul li:hover{
+  background:#111827;
+  transform:translateX(6px);
 }
 
-.top h1{
-  font-size:28px;
+.sidebar ul .active{
+  background:#1f2937;
+  box-shadow:inset 3px 0 0 #38bdf8;
 }
-
-.top p{
-  opacity:0.85;
-  margin-bottom:30px;
-}
-
-/* Stats */
-.stats{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:20px;
-}
-
 .stat{
-  padding:25px;
-  border-radius:20px;
-  text-align:center;
-  font-size:18px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  backdrop-filter:blur(10px);
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.05);
 }
-
-.stat p{
-  font-size:34px;
-  font-weight:bold;
-  margin-top:5px;
+.stat:hover{
+  transform:translateY(-6px);
+  box-shadow:0 18px 45px rgba(0,0,0,0.6);
 }
-
-.blue{background:rgba(78,115,223,0.9);}
-.green{background:rgba(28,200,138,0.9);}
-.yellow{background:rgba(246,194,62,0.9);}
-.red{background:rgba(231,74,59,0.9);}
-
-.tasks{
-  margin-top:40px;
-}
+.blue{ background:linear-gradient(135deg,#1e3a8a,#1e40af); }
+.green{ background:linear-gradient(135deg,#065f46,#047857); }
+.yellow{ background:linear-gradient(135deg,#92400e,#b45309); }
+.red{ background:linear-gradient(135deg,#7f1d1d,#991b1b); }
 
 .task{
-  background:rgba(255,255,255,0.2);
-  padding:15px 20px;
-  border-radius:15px;
-  margin-bottom:10px;
+  background:#020617;
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px;
+  transition:all 0.25s ease;
 }
 
-/* ===== MODERN AI CHAT ===== */
-
-.chat-toggle{
-  position:fixed;
-  bottom:25px;
-  right:25px;
-  width:65px;
-  height:65px;
-  border-radius:50%;
-  background:#ffffff;
-  color:#764ba2;
-  font-size:30px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  box-shadow:0 10px 25px rgba(0,0,0,0.4);
-  z-index:1000;
+.task:hover{
+  background:#020617;
+  transform:translateX(6px);
+  border-color:#38bdf8;
 }
 
-.chat-window{
-  position:fixed;
-  bottom:100px;
-  right:25px;
-  width:380px;
-  height:520px;
-  background:#fff;
-  border-radius:25px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.4);
-  display:none;
-  flex-direction:column;
-  overflow:hidden;
-  z-index:1000;
+h1{
+  font-size:26px;
+  font-weight:600;
 }
 
-.chat-window.show{ display:flex; }
-
-.chat-header{
-  background:linear-gradient(45deg,#764ba2,#667eea);
-  color:#fff;
-  padding:15px;
+h2{
   font-size:18px;
-  text-align:center;
-  font-weight:bold;
+  font-weight:500;
 }
 
-.chat-body{
-  flex:1;
-  padding:15px;
-  overflow-y:auto;
-  background:#f6f6f6;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.msg{
-  padding:10px 14px;
-  border-radius:15px;
-  max-width:80%;
+p{
+  color:#9ca3af;
   font-size:14px;
 }
-
-.user{
-  align-self:flex-end;
-  background:#764ba2;
-  color:#fff;
-}
-
-.ai{
-  align-self:flex-start;
-  background:#e4e6eb;
-  color:#333;
-  font-style:italic;
-}
-
-.chat-input{
-  display:flex;
-  border-top:1px solid #ddd;
-}
-
-.chat-input input{
-  flex:1;
-  border:none;
-  padding:12px;
-  outline:none;
-}
-
-.chat-input button{
-  border:none;
-  padding:12px 18px;
-  background:#764ba2;
-  color:#fff;
-  cursor:pointer;
-}
-</style>
+  </style>
 </head>
 
 <body>
 
 <div class="layout">
 
+  <!-- Sidebar -->
   <aside class="sidebar">
     <h2>TaskFlow</h2>
     <ul>
@@ -226,100 +240,57 @@ body{
     </ul>
   </aside>
 
+  <!-- Main -->
   <main class="main">
+
+    <!-- Header -->
     <div class="top">
       <h1>Hello, {{ name }} 👋</h1>
       <p>Track your tasks and stay productive</p>
     </div>
 
+    <!-- Stats -->
     <section class="stats">
-      <div class="stat blue"><h3>Total Tasks</h3><p>{{ total_tasks }}</p></div>
-      <div class="stat green"><h3>Completed</h3><p>{{ completed }}</p></div>
-      <div class="stat yellow"><h3>Pending</h3><p>{{ pending }}</p></div>
-      <div class="stat red"><h3>Overdue</h3><p>{{ overdue }}</p></div>
+      <div class="stat blue">
+        <h3>Total Tasks</h3>
+        <p>{{ total_tasks }}</p>
+      </div>
+
+      <div class="stat green">
+        <h3>Completed</h3>
+        <p>{{ completed }}</p>
+      </div>
+
+      <div class="stat yellow">
+        <h3>Pending</h3>
+        <p>{{ pending }}</p>
+      </div>
+
+      <div class="stat red">
+        <h3>Overdue</h3>
+        <p>{{ overdue }}</p>
+      </div>
     </section>
 
+    <!-- Today's Tasks -->
     <section class="tasks">
-      {% if warning %}
-<div style="background:#ffdddd;padding:15px;border-radius:8px;margin-bottom:15px;">
-    ⚠️ {{ warning }}
-    <br><br>
-    <a href="/suggest_shift" style="background:red;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;">
-        Suggest a task to move
-    </a>
-</div>
-{% endif %}
       <h2>Today's Daily Tasks</h2>
+
       {% if today_tasks %}
         {% for task in today_tasks %}
           <div class="task">
             <span>{{ task[0] }}</span>
+            <span class="priority medium">⏰ {{ task[1] }}</span>
           </div>
         {% endfor %}
       {% else %}
         <p class="no-task">No tasks for today 🎉</p>
       {% endif %}
     </section>
+
   </main>
+
 </div>
 
-<!-- AI CHAT -->
-<div class="chat-toggle" onclick="toggleChat()">🤖</div>
-
-<div class="chat-window" id="chatWindow">
-  <div class="chat-header">AI Task Coach</div>
-  <div class="chat-body" id="chatBody"></div>
-
-  <div class="chat-input">
-    <input type="text" id="userMsg" placeholder="Ask something about your tasks...">
-    <button onclick="sendMessage()">➤</button>
-  </div>
-</div>
-
-<script>
-function toggleChat(){
-  document.getElementById("chatWindow").classList.toggle("show");
-}
-
-function addMessage(text, type, id=null){
-  const body = document.getElementById("chatBody");
-  const div = document.createElement("div");
-  div.className = "msg " + type;
-  if(id) div.id = id;
-  div.innerText = text;
-  body.appendChild(div);
-  body.scrollTop = body.scrollHeight;
-}
-
-function sendMessage(){
-  let msg = document.getElementById("userMsg").value.trim();
-  if(msg==="") return;
-
-  addMessage(msg, "user");
-  document.getElementById("userMsg").value="";
-
-  // Thinking bubble just under user message
-  addMessage("AI is thinking...", "ai", "thinkingBubble");
-
-  fetch("/chatbot",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({message:msg})
-  })
-  .then(res=>res.json())
-  .then(data=>{
-    let thinking = document.getElementById("thinkingBubble");
-    if(thinking) thinking.remove();
-
-    addMessage(data.reply || "No response", "ai");
-  });
-}
-
-document.getElementById("userMsg").addEventListener("keypress", function(e){
-  if(e.key === "Enter"){
-    sendMessage();
-  }
-});
-</script>
 </body>
 </html>
