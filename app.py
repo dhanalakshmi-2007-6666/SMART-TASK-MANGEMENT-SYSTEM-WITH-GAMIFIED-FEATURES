@@ -5,6 +5,7 @@ import smtplib
 from email.message import EmailMessage
 import random
 from datetime import datetime, timedelta
+from datetime import date
 import joblib
 import os
 from werkzeug.utils import secure_filename
@@ -490,10 +491,11 @@ def mytask():
     daily_tasks = cur.fetchall()
 
     con.close()
-
+    today = date.today().strftime("%Y-%m-%d")
     return render_template("mytask.html",
                            tasks=tasks,
                            daily_tasks=daily_tasks,
+                           today=today,
                            energy=energy)
 @app.route("/back")
 def back():

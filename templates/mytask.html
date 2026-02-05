@@ -197,93 +197,144 @@ h2 {
 
 
   <!-- ================= NORMAL TASKS ================= -->
-  <h2>📌 Normal Tasks</h2>
+    <h2>📌 Normal Tasks</h2>
 
-  {% if tasks %}
-    {% for t in tasks %}
-      <div class="task-card">
-        <div class="task-header">
-          <div class="task-title">{{ t[2] }}</div>
-          <div class="task-dates">{{ t[4] }} → {{ t[5] }}</div>
-        </div>
+    {% if tasks %}
+      <!-- {% for t in tasks %}
+        <div class="task-card">
+          <div class="task-header">
+            <div class="task-title">{{ t[2] }}</div>
+            <div class="task-dates">{{ t[4] }} → {{ t[5] }}</div>
 
-        <div class="task-desc">{{ t[3] }}</div>
-
-        <div class="task-footer">
-
-          {% if t[6] %}
-            <a class="file-btn"
-               href="{{ url_for('static', filename='uploads/' + t[6]) }}"
-               target="_blank">📎 View</a>
-          {% endif %}
-
-          {% if t[8] == 'pending' %}
-            <a class="complete-btn"
-               href="{{ url_for('complete_task', task_id=t[0]) }}">
-               ✅ Complete
-            </a>
-          {% else %}
-            <span class="completed-badge">
-              ✔ Completed ({{ t[10] }} 🪙)
-            </span>
-          {% endif %}
-
-          <a class="delete-btn"
-             href="{{ url_for('delete_task', task_id=t[0]) }}"
-             onclick="return confirm('Are you sure?')">
-             🗑 Delete
-          </a>
-
-        </div>
-      </div>
-    {% endfor %}
-  {% else %}
-    <p class="no-task">No normal tasks 🚫</p>
-  {% endif %}
-
-  <!-- ================= DAILY TASKS ================= -->
-  <h2>⏰ Daily Tasks</h2>
-
-  {% if daily_tasks %}
-    {% for d in daily_tasks %}
-      <div class="task-card">
-        <div class="task-header">
-          <div class="task-title">
-            {{ d[2] }}
-            <span class="badge">Daily</span>
           </div>
-          <div class="task-dates">{{ d[4] }} ⏰ {{ d[5] }}</div>
-        </div>
-
-        <div class="task-desc">{{ d[3] }}</div>
-
-        <div class="task-footer">
-
-          {% if d[6] == 'pending' %}
-            <a class="complete-btn"
-               href="{{ url_for('complete_daily_task', task_id=d[0]) }}">
-               ✅ Complete
-            </a>
-          {% else %}
-            <span class="completed-badge">
-              ✔ Completed ({{ d[8] }} 🪙)
-            </span>
+          
+            {% set to_date = t[5] | string %}
+          {% if today|string > to_date %}
+            <div class="task-delay"><p>Delayed</p></div>
           {% endif %}
+          </div>
 
-          <a class="delete-btn"
-             href="{{ url_for('delete_daily_task', task_id=d[0]) }}"
-             onclick="return confirm('Delete this daily task?')">
-             🗑 Delete
-          </a>
+          <div class="task-desc">{{ t[3] }}</div>
 
+          <div class="task-footer">
+
+            {% if t[6] %}
+              <a class="file-btn"
+                href="{{ url_for('static', filename='uploads/' + t[6]) }}"
+                target="_blank">📎 View</a>
+            {% endif %}
+
+            {% if t[8] == 'pending' %}
+              <a class="complete-btn"
+                href="{{ url_for('complete_task', task_id=t[0]) }}">
+                ✅ Complete
+              </a>
+            {% else %}
+              <span class="completed-badge">
+                ✔ Completed ({{ t[10] }} 🪙)
+              </span>
+            {% endif %}
+
+            <a class="delete-btn"
+              href="{{ url_for('delete_task', task_id=t[0]) }}"
+              onclick="return confirm('Are you sure?')">
+              🗑 Delete
+            </a>
+
+          </div>
         </div>
-      </div>
-    {% endfor %}
-  {% else %}
-    <p class="no-task">No daily tasks ⏳</p>
-  {% endif %}
+      {% endfor %}
+    {% else %}
+      <p class="no-task">No normal tasks 🚫</p>
+    {% endif %} -->
+    {% for t in tasks %}
+  <div class="task-card">
 
-</div>
+    <div class="task-header">
+      <div class="task-title">{{ t[2] }}</div>
+      <div class="task-dates">{{ t[4] }} → {{ t[5] }}</div>
 
-</body>
-</html>
+      {% set to_date = t[5] | string %}
+      {% if today > to_date %}
+        <div class="task-delay"><p>Delayed</p></div>
+      {% endif %}
+    </div>
+
+    <div class="task-desc">{{ t[3] }}</div>
+
+    <div class="task-footer">
+
+      {% if t[6] %}
+        <a class="file-btn"
+           href="{{ url_for('static', filename='uploads/' + t[6]) }}"
+           target="_blank">📎 View</a>
+      {% endif %}
+
+      {% if t[8] == 'pending' %}
+        <a class="complete-btn"
+           href="{{ url_for('complete_task', task_id=t[0]) }}">
+          ✅ Complete
+        </a>
+      {% else %}
+        <span class="completed-badge">
+          ✔ Completed ({{ t[10] }} 🪙)
+        </span>
+      {% endif %}
+
+      <a class="delete-btn"
+         href="{{ url_for('delete_task', task_id=t[0]) }}"
+         onclick="return confirm('Are you sure?')">
+        🗑 Delete
+      </a>
+
+    </div>
+
+  </div>
+{% endfor %}
+
+    <!-- ================= DAILY TASKS ================= -->
+    <h2>⏰ Daily Tasks</h2>
+
+    {% if daily_tasks %}
+      {% for d in daily_tasks %}
+        <div class="task-card">
+          <div class="task-header">
+            <div class="task-title">
+              {{ d[2] }}
+              <span class="badge">Daily</span>
+            </div>
+            <div class="task-dates">{{ d[4] }} ⏰ {{ d[5] }}</div>
+          </div>
+
+          <div class="task-desc">{{ d[3] }}</div>
+
+          <div class="task-footer">
+
+            {% if d[6] == 'pending' %}
+              <a class="complete-btn"
+                href="{{ url_for('complete_daily_task', task_id=d[0]) }}">
+                ✅ Complete
+              </a>
+            {% else %}
+              <span class="completed-badge">
+                ✔ Completed ({{ d[8] }} 🪙)
+              </span>
+            {% endif %}
+
+            <a class="delete-btn"
+              href="{{ url_for('delete_daily_task', task_id=d[0]) }}"
+              onclick="return confirm('Delete this daily task?')">
+              🗑 Delete
+            </a>
+
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="no-task">No daily tasks ⏳</p>
+    {% endif %}
+
+  </div>
+
+  </body>
+  </html>
