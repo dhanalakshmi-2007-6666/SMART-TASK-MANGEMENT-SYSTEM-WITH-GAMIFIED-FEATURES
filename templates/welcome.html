@@ -289,8 +289,170 @@ p{
     </section>
 
   </main>
+</div>
+<!-- ================= AI CHATBOT ================= -->
+<style>
+#chatbot-btn{
+  position:fixed;
+  bottom:25px;
+  right:25px;
+  width:65px;
+  height:65px;
+  border-radius:50%;
+  background:#38bdf8;
+  color:white;
+  font-size:28px;
+  border:none;
+  cursor:pointer;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  z-index:999;
+}
 
+#chatbox{
+  position:fixed;
+  bottom:100px;
+  right:25px;
+  width:320px;
+  height:420px;
+  background:#0f172a;
+  border-radius:15px;
+  display:none;
+  flex-direction:column;
+  box-shadow:0 10px 40px rgba(0,0,0,0.6);
+  overflow:hidden;
+  z-index:999;
+}
+
+#chat-header{
+  background:#1e293b;
+  color:white;
+  padding:12px;
+  text-align:center;
+  font-weight:bold;
+}
+
+#chat-messages{
+  flex:1;
+  padding:10px;
+  overflow-y:auto;
+  font-size:13px;
+}
+
+.msg{
+  margin:8px 0;
+  padding:8px 10px;
+  border-radius:10px;
+  max-width:80%;
+}
+
+.user{
+  background:#38bdf8;
+  align-self:flex-end;
+}
+
+.bot{
+  background:#334155;
+  align-self:flex-start;
+}
+
+#chat-input{
+  display:flex;
+  border-top:1px solid #1e293b;
+}
+
+#chat-input input{
+  flex:1;
+  padding:10px;
+  border:none;
+  outline:none;
+}
+
+#chat-input button{
+  padding:10px;
+  background:#38bdf8;
+  border:none;
+  color:white;
+  cursor:pointer;
+}
+</style>
+
+<button id="chatbot-btn">💬</button>
+
+<div id="chatbox">
+  <div id="chat-header">AI Assistant</div>
+  <div id="chat-messages"></div>
+  <div id="chat-input">
+    <input type="text" id="msg" placeholder="Ask something...">
+    <button onclick="sendMsg()">Send</button>
+  </div>
 </div>
 
+<script>
+const btn = document.getElementById("chatbot-btn");
+const box = document.getElementById("chatbox");
+const messages = document.getElementById("chat-messages");
+
+btn.onclick = () => {
+  if(box.style.display === "flex"){
+    box.style.display = "none";
+  } else {
+    box.style.display = "flex";
+    loadHistory();
+  }
+}
+function loadHistory(){
+  messages.innerHTML = "";
+
+  fetch("/get_chat_history")
+  .then(res => res.json())
+  .then(data => {
+    data.forEach(chat => {
+      appendMessage(chat.user, "user");
+      appendMessage(chat.bot, "bot");
+    });
+  });
+}
+
+function appendMessage(text, cls, id=null){
+  let div = document.createElement("div");
+  div.className = "msg " + cls;
+  if(id) div.id = id;
+  div.innerText = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function sendMsg(){
+  let input = document.getElementById("msg");
+  let text = input.value.trim();
+  if(!text) return;
+
+  appendMessage(text, "user");
+  input.value = "";
+
+  // 👇 Thinking message
+  appendMessage("AI is thinking...", "bot", "thinking");
+
+  fetch("/chatbot", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:text})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    // remove thinking message
+    let think = document.getElementById("thinking");
+    if(think) think.remove();
+
+    appendMessage(data.reply, "bot");
+  })
+  .catch(()=>{
+    let think = document.getElementById("thinking");
+    if(think) think.remove();
+
+    appendMessage("AI not responding", "bot");
+  });
+}
+</script>
 </body>
 </html>

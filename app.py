@@ -975,6 +975,30 @@ def move_task(task_id):
 
     flash("Task moved to tomorrow to reduce overload ✅", "success")
     return redirect(url_for("welcome"))
+@app.route("/get_chat_history")
+def get_chat_history():
+    if 'email' not in session:
+        return jsonify([])
+
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT user_msg, bot_reply
+        FROM chat_history
+        WHERE email=?
+        ORDER BY time ASC
+        LIMIT 50
+    """, (session['email'],))
+
+    rows = cur.fetchall()
+    con.close()
+
+    history = []
+    for u, b in rows:
+        history.append({"user": u, "bot": b})
+
+    return jsonify(history)
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
