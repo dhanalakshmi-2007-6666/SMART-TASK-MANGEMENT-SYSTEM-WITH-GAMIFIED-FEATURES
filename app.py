@@ -7,6 +7,10 @@ import random
 from datetime import datetime, timedelta
 from datetime import date
 import joblib
+from pywebpush import webpush
+import json
+import threading
+import time
 import os
 from werkzeug.utils import secure_filename
 from ollama_ai import ask_ai
@@ -19,6 +23,7 @@ except:
     ML_MODEL = None
     print("ML model not found")
 app = Flask(__name__)
+subscriptions = []
 app.secret_key = "my_super_secret_key_123"
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -51,14 +56,11 @@ def init_db():
                 )''')
     cur.execute('''
     CREATE TABLE IF NOT EXISTS dailys_task(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT,
-        taskname TEXT,
-        description TEXT,
-        task_date DATE,
-        status TEXT DEFAULT 'pending',
-        completed_date DATE,
-        earned_coins INTEGER DEFAULT 0
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT,
+    taskname TEXT,
+    description TEXT,
+    task_time TEXT
     )
     ''')
     cur.execute('''
@@ -237,10 +239,7 @@ def welcome():
     overdue = cur.fetchone()[0]
 
     # Today daily tasks
-    cur.execute("""SELECT taskname, task_date
-                   FROM dailys_task
-                   WHERE email=? AND task_date=?""",
-                (email, today))
+    cur.execute("SELECT * FROM dailys_task WHERE email=?", (session['email'],))
     today_tasks = cur.fetchall()
 
     con.close()
@@ -486,12 +485,13 @@ def mytask():
         """, (session['email'],))
 
     tasks = cur.fetchall()
-
     cur.execute("SELECT * FROM dailys_task WHERE email=?", (session['email'],))
     daily_tasks = cur.fetchall()
 
     con.close()
+
     today = date.today().strftime("%Y-%m-%d")
+
     return render_template("mytask.html",
                            tasks=tasks,
                            daily_tasks=daily_tasks,
@@ -558,21 +558,20 @@ def add_daily_task():
     if request.method == "POST":
         taskname = request.form["taskname"]
         description = request.form["description"]
-        task_date = request.form["task_date"]
+        task_time = request.form["task_time"]
         email = session['email']
 
         con = sqlite3.connect("task.db")
         cur = con.cursor()
         cur.execute("""
-        INSERT INTO dailys_task
-        (email, taskname, description, task_date)
-        VALUES (?,?,?,?)
-        """, (email, taskname, description, task_date))
+            INSERT INTO dailys_task (email, taskname, description, task_time)
+            VALUES (?,?,?,?)
+        """, (email, taskname, description, task_time))
 
         con.commit()
         con.close()
 
-        flash("Daily task added ", "success")
+        flash("Reminder task added ⏰", "success")
         return redirect(url_for("mytask"))
 
     return render_template("dailytask.html")
@@ -692,70 +691,6 @@ def complete_task(task_id):
     con.close()
 
     flash(f"Task completed 🎉 You earned {coins} coins", "success")
-    return redirect(url_for("mytask"))
-@app.route("/complete_daily_task/<int:task_id>")
-def complete_daily_task(task_id):
-    if 'email' not in session:
-        return redirect(url_for("login"))
-
-    today = datetime.now().date()
-
-    con = sqlite3.connect("task.db")
-    cur = con.cursor()
-
-    cur.execute("""
-        SELECT taskname, task_date, status
-        FROM dailys_task
-        WHERE id=? AND email=?
-    """, (task_id, session['email']))
-    task = cur.fetchone()
-
-    if not task or task[2] == 'completed':
-        con.close()
-        return redirect(url_for("mytask"))
-
-    taskname, task_date, _ = task
-    task_date = datetime.strptime(task_date, "%Y-%m-%d").date()
-
-    coins = 20 if today <= task_date else 0
-
-    cur.execute("""
-        UPDATE dailys_task
-        SET status='completed', completed_date=?, earned_coins=?
-        WHERE id=? AND email=?
-    """, (today, coins, task_id, session['email']))
-
-    cur.execute("""
-        UPDATE users_main SET coins = coins + ? WHERE email=?
-    """, (coins, session['email']))
-
-    if coins > 0:
-        cur.execute("""
-            INSERT INTO coin_history (email, task_name, coins, earned_date)
-            VALUES (?,?,?,?)
-        """, (session['email'], taskname, coins, today))
-
-    con.commit()
-    subject = "✅ Daily Task Completed"
-    body = f"""
-    Hi {session['name']},
-
-    Awesome! 🌟
-
-    Your daily task has been completed.
-
-    Task Name : {taskname}
-    Completed On : {today}
-    Coins Earned : {coins} 🪙
-
-    Stay consistent 💯
-    """
-
-    send_email(session['email'], subject, body)
-
-    con.close()
-
-    flash(f"Daily task completed 🎯 Coins earned: {coins}", "success")
     return redirect(url_for("mytask"))
 @app.route("/coins", methods=["GET", "POST"])
 def coins():
@@ -999,6 +934,36 @@ def get_chat_history():
         history.append({"user": u, "bot": b})
 
     return jsonify(history)
+@app.route("/subscribe", methods=["POST"])
+def subscribe():
+    sub = request.json
+    subscriptions.append(sub)
+    return '', 204
+def send_notification(title, message):
+    for sub in subscriptions:
+        webpush(
+            subscription_info=sub,
+            data=json.dumps({"title": title, "body": message}),
+            vapid_private_key="vr7XGM7EU1p8kbdAKHxPg-X2ZPidYhoLqq7ANqXJSA8",
+            vapid_claims={"sub": "mailto:yourmail@gmail.com"}
+        )
+def reminder_checker():
+    while True:
+        now = datetime.now().strftime("%H:%M")
+        con = sqlite3.connect("task.db")
+        cur = con.cursor()
+        cur.execute("SELECT taskname, task_time FROM dailys_task")
+        tasks = cur.fetchall()
+        con.close()
+
+        for name, ttime in tasks:
+            task_dt = datetime.strptime(ttime, "%H:%M") - timedelta(hours=1)
+            if now == task_dt.strftime("%I:%M %p"):
+                send_notification("Reminder", f"{name} in 1 hour!")
+
+        time.sleep(60)
+
+threading.Thread(target=reminder_checker).start()
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)

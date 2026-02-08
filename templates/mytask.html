@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Tasks</title>
+  <script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js')
+    .then(() => console.log("SW registered"));
+}
+
+Notification.requestPermission();
+</script>
 
   <style>
 
@@ -293,48 +301,48 @@ h2 {
 {% endfor %}
 
     <!-- ================= DAILY TASKS ================= -->
-    <h2>⏰ Daily Tasks</h2>
+    <h2>⏰ Reminder Tasks</h2>
 
-    {% if daily_tasks %}
-      {% for d in daily_tasks %}
-        <div class="task-card">
-          <div class="task-header">
-            <div class="task-title">
-              {{ d[2] }}
-              <span class="badge">Daily</span>
-            </div>
-            <div class="task-dates">{{ d[4] }} ⏰ {{ d[5] }}</div>
-          </div>
+{% if daily_tasks %}
+  {% for d in daily_tasks %}
+  <div class="task-card">
+    <div class="task-header">
+      <div class="task-title">
+        {{ d[2] }}
+        <span class="badge">Reminder</span>
+      </div>
+      <div class="task-dates">⏰ {{ d[4] }}</div>
+    </div>
 
-          <div class="task-desc">{{ d[3] }}</div>
+    <div class="task-desc">{{ d[3] }}</div>
 
-          <div class="task-footer">
-
-            {% if d[6] == 'pending' %}
-              <a class="complete-btn"
-                href="{{ url_for('complete_daily_task', task_id=d[0]) }}">
-                ✅ Complete
-              </a>
-            {% else %}
-              <span class="completed-badge">
-                ✔ Completed ({{ d[8] }} 🪙)
-              </span>
-            {% endif %}
-
-            <a class="delete-btn"
-              href="{{ url_for('delete_daily_task', task_id=d[0]) }}"
-              onclick="return confirm('Delete this daily task?')">
-              🗑 Delete
-            </a>
-
-          </div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <p class="no-task">No daily tasks ⏳</p>
-    {% endif %}
+    <div class="task-footer">
+      <a class="delete-btn"
+         href="{{ url_for('delete_daily_task', task_id=d[0]) }}"
+         onclick="return confirm('Delete this reminder?')">
+         🗑 Delete
+      </a>
+    </div>
+  </div>
+{% endfor %}
+{% else %}
+  <p class="no-task">No reminder tasks ⏳</p>
+{% endif %}
 
   </div>
-
+  <script>
+navigator.serviceWorker.ready.then(reg => {
+    reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: 'BN1LJexTLCWTbXYnz5cTT8QOqMwFoP1qxwN1JRzrG6l8tmcfPVCvV-tPz0OA6aeC_JxRKpyQ_m8KnHlDuSNmrEM'
+    }).then(sub => {
+        fetch('/subscribe', {
+            method: 'POST',
+            body: JSON.stringify(sub),
+            headers: {'Content-Type': 'application/json'}
+        });
+    });
+});
+</script>
   </body>
   </html>
