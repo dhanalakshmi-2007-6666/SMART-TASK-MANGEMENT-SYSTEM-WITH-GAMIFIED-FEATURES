@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.css">
+<script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Task Dashboard</title>
@@ -219,6 +221,47 @@ p{
   color:#9ca3af;
   font-size:14px;
 }
+#heatmap-wrapper{
+  margin-top:20px;
+  display:flex;
+  gap:14px;
+  overflow-x:auto;
+}
+
+.month{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.month-name{
+  font-size:12px;
+  margin-bottom:6px;
+  color:#9ca3af;
+}
+
+.days{
+  display:grid;
+  grid-template-columns: repeat(7, 16px);
+  gap:4px;
+}
+
+.hm-cell{
+  width:16px;
+  height:16px;
+  border-radius:3px;
+  background:#1e293b;
+  transition:0.2s;
+}
+
+.hm-cell:hover{
+  transform:scale(1.2);
+}
+
+.l1{background:#14532d;}
+.l2{background:#166534;}
+.l3{background:#22c55e;}
+.l4{background:#4ade80;}
   </style>
 </head>
 
@@ -271,23 +314,62 @@ p{
         <p>{{ overdue }}</p>
       </div>
     </section>
+    <!-- 🔥 HEATMAP START -->
+<h2 style="margin-top:40px;">🔥 Your Task Streak</h2>
+<div id="heatmap" style="margin-top:15px;"></div>
 
-    <!-- Today's Tasks -->
-    <section class="tasks">
-      <h2>Today's Daily Tasks</h2>
+<style>
+#heatmap{
+  display:grid;
+  grid-template-columns: repeat(30, 18px);
+  gap:5px;
+}
+.hm-cell{
+  width:18px;
+  height:18px;
+  border-radius:3px;
+  background:#1e293b;
+}
+.l1{background:#14532d;}
+.l2{background:#166534;}
+.l3{background:#22c55e;}
+.l4{background:#4ade80;}
+</style>
 
-      {% if today_tasks %}
-        {% for task in today_tasks %}
-          <div class="task">
-            <span>{{ task[0] }}</span>
-            <span class="priority medium">⏰ {{ task[1] }}</span>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p class="no-task">No tasks for today 🎉</p>
-      {% endif %}
-    </section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+  fetch("/heatmap-data")
+  .then(r => r.json())
+  .then(data => {
+
+    console.log("Heatmap data:", data);
+
+    const box = document.getElementById("heatmap");
+
+    for(let i=89;i>=0;i--){
+      const d = new Date();
+      d.setDate(d.getDate()-i);
+      const ds = d.toISOString().split("T")[0];
+
+      const v = data[ds] || 0;
+
+      const c = document.createElement("div");
+      c.className = "hm-cell";
+
+      if(v==1) c.classList.add("l1");
+      else if(v==2) c.classList.add("l2");
+      else if(v==3) c.classList.add("l3");
+      else if(v>=4) c.classList.add("l4");
+
+      c.title = ds+" : "+v+" tasks";
+      box.appendChild(c);
+    }
+
+  });
+});
+</script>
+<!-- 🔥 HEATMAP END -->
   </main>
 </div>
 <!-- ================= AI CHATBOT ================= -->
@@ -374,6 +456,18 @@ p{
   color:white;
   cursor:pointer;
 }
+#heatmap{
+  display:grid;
+  grid-template-columns: repeat(30, 12px);
+  gap:4px;
+  margin-top:15px;
+}
+.box{
+  width:12px;
+  height:12px;
+  background:#ebedf0;
+  border-radius:2px;
+}
 </style>
 
 <button id="chatbot-btn">💬</button>
@@ -452,6 +546,32 @@ function sendMsg(){
 
     appendMessage("AI not responding", "bot");
   });
+}
+</script>
+<script>
+const data = {
+  "2026-02-08": 1,
+  "2026-02-09": 2,
+  "2026-02-10": 4
+};
+
+const heatmap = document.getElementById("heatmap");
+
+for(let i=0;i<90;i++){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const dateStr = d.toISOString().split('T')[0];
+
+    const box = document.createElement("div");
+    box.className="box";
+
+    if(data[dateStr]){
+        if(data[dateStr]==1) box.style.background="#9be9a8";
+        else if(data[dateStr]==2) box.style.background="#40c463";
+        else box.style.background="#216e39";
+    }
+
+    heatmap.appendChild(box);
 }
 </script>
 </body>

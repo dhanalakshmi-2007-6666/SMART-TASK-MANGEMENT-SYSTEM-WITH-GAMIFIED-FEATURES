@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
 import re
 import sqlite3
 import smtplib
@@ -23,7 +24,6 @@ except:
     ML_MODEL = None
     print("ML model not found")
 app = Flask(__name__)
-subscriptions = []
 app.secret_key = "my_super_secret_key_123"
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -55,7 +55,7 @@ def init_db():
                 earned_coins INTEGER DEFAULT 0
                 )''')
     cur.execute('''
-    CREATE TABLE IF NOT EXISTS dailys_task(
+    CREATE TABLE IF NOT EXISTS dailys__task(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT,
     taskname TEXT,
@@ -101,7 +101,13 @@ def init_db():
     date DATE
     )
     ''')
-
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS push_subscriptions(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT,
+        subscription TEXT
+    )
+    """)
     con.commit()
     con.close()
 def analyze_user(email):
@@ -239,7 +245,7 @@ def welcome():
     overdue = cur.fetchone()[0]
 
     # Today daily tasks
-    cur.execute("SELECT * FROM dailys_task WHERE email=?", (session['email'],))
+    cur.execute("SELECT * FROM dailys__task WHERE email=?", (session['email'],))
     today_tasks = cur.fetchall()
 
     con.close()
@@ -485,7 +491,7 @@ def mytask():
         """, (session['email'],))
 
     tasks = cur.fetchall()
-    cur.execute("SELECT * FROM dailys_task WHERE email=?", (session['email'],))
+    cur.execute("SELECT * FROM dailys__task WHERE email=?", (session['email'],))
     daily_tasks = cur.fetchall()
 
     con.close()
@@ -563,11 +569,11 @@ def add_daily_task():
 
         con = sqlite3.connect("task.db")
         cur = con.cursor()
+        today = datetime.now().date()
         cur.execute("""
-            INSERT INTO dailys_task (email, taskname, description, task_time)
-            VALUES (?,?,?,?)
-        """, (email, taskname, description, task_time))
-
+INSERT INTO dailys__task (email, taskname, description, task_time)
+VALUES (?,?,?,?)
+""", (email, taskname, description, task_time))
         con.commit()
         con.close()
 
@@ -584,7 +590,7 @@ def delete_daily_task(task_id):
     cur = con.cursor()
 
     cur.execute("""
-        DELETE FROM dailys_task
+        DELETE FROM dailys__task
         WHERE id=? AND email=?
     """, (task_id, session['email']))
 
@@ -817,12 +823,11 @@ def alltasks():
     """, (session['email'],))
 
     tasks = cur.fetchall()
-
     cur.execute("""
-        SELECT * FROM dailys_task
-        WHERE email=?
-        ORDER BY task_date ASC
-    """, (session['email'],))
+    SELECT id, taskname, description, task_time
+    FROM dailys__task
+    WHERE email=?
+""", (session['email'],))
 
     daily_tasks = cur.fetchall()
 
@@ -936,34 +941,102 @@ def get_chat_history():
     return jsonify(history)
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
+    if 'email' not in session:
+        return '', 403
+
     sub = request.json
-    subscriptions.append(sub)
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+    cur.execute("""
+        INSERT INTO push_subscriptions (email, subscription)
+        VALUES (?, ?)
+    """, (session['email'], json.dumps(sub)))
+    con.commit()
+    con.close()
+
     return '', 204
-def send_notification(title, message):
-    for sub in subscriptions:
+def check_upcoming_tasks():
+    now = datetime.now()
+    after_1hr = now + timedelta(hours=1)
+
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT email, taskname, to_date
+        FROM adds__task
+        WHERE status='pending'
+    """)
+
+    tasks = cur.fetchall()
+    con.close()
+
+    for email, name, to_date in tasks:
+        deadline = datetime.strptime(to_date, "%Y-%m-%d")
+        reminder_time = deadline - timedelta(hours=1)
+
+        if now.strftime("%Y-%m-%d %H:%M") == reminder_time.strftime("%Y-%m-%d %H:%M"):
+            send_notification_to_user(
+                email,
+                "⏰ Task Reminder",
+                f"'{name}' deadline in 1 hour!"
+            )
+def send_notification_to_user(email, title, message):
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
+
+    cur.execute("""
+        SELECT subscription FROM push_subscriptions
+        WHERE email=?
+    """, (email,))
+
+    rows = cur.fetchall()
+    con.close()
+
+    for row in rows:
+        sub = json.loads(row[0])
         webpush(
             subscription_info=sub,
             data=json.dumps({"title": title, "body": message}),
-            vapid_private_key="vr7XGM7EU1p8kbdAKHxPg-X2ZPidYhoLqq7ANqXJSA8",
+            vapid_private_key="YOUR_KEY",
             vapid_claims={"sub": "mailto:yourmail@gmail.com"}
         )
-def reminder_checker():
-    while True:
-        now = datetime.now().strftime("%H:%M")
-        con = sqlite3.connect("task.db")
-        cur = con.cursor()
-        cur.execute("SELECT taskname, task_time FROM dailys_task")
-        tasks = cur.fetchall()
-        con.close()
+@app.route("/complete_task/<int:task_id>")
+def complete_task(task_id):
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
 
-        for name, ttime in tasks:
-            task_dt = datetime.strptime(ttime, "%H:%M") - timedelta(hours=1)
-            if now == task_dt.strftime("%I:%M %p"):
-                send_notification("Reminder", f"{name} in 1 hour!")
+    cur.execute("UPDATE adds__task SET status='completed' WHERE id=?", (task_id,))
+    con.commit()
+    con.close()
 
-        time.sleep(60)
+    return redirect(url_for("alltasks"))
+@app.route("/heatmap-data")
+def heatmap_data():
+    con = sqlite3.connect("task.db")
+    cur = con.cursor()
 
-threading.Thread(target=reminder_checker).start()
+    # count completed tasks per day from your main task table
+    cur.execute("""
+        SELECT DATE(to_date) as d, COUNT(*)
+        FROM adds__task
+        WHERE status = 'completed'
+        GROUP BY d
+    """)
+
+    rows = cur.fetchall()
+    con.close()
+
+    data = {}
+    for d, count in rows:
+        data[d] = count
+
+    print("Heatmap data:", data)  # 👈 must print in terminal
+
+    return jsonify(data)
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(check_upcoming_tasks, 'interval', minutes=1)
+    scheduler.start()
+    app.run(debug=True, use_reloader=False)
