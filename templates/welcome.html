@@ -221,12 +221,6 @@ p{
   color:#9ca3af;
   font-size:14px;
 }
-#heatmap-wrapper{
-  margin-top:20px;
-  display:flex;
-  gap:14px;
-  overflow-x:auto;
-}
 
 .month{
   display:flex;
@@ -246,22 +240,6 @@ p{
   gap:4px;
 }
 
-.hm-cell{
-  width:16px;
-  height:16px;
-  border-radius:3px;
-  background:#1e293b;
-  transition:0.2s;
-}
-
-.hm-cell:hover{
-  transform:scale(1.2);
-}
-
-.l1{background:#14532d;}
-.l2{background:#166534;}
-.l3{background:#22c55e;}
-.l4{background:#4ade80;}
   </style>
 </head>
 
@@ -314,61 +292,256 @@ p{
         <p>{{ overdue }}</p>
       </div>
     </section>
-    <!-- 🔥 HEATMAP START -->
-<h2 style="margin-top:40px;">🔥 Your Task Streak</h2>
-<div id="heatmap" style="margin-top:15px;"></div>
+    <!--the heatmap code inga start agutheyy!!-->
 
+    <!-- ================= TASK STREAK PROGRESS BOARD ================= -->
+
+<div class="streak-card">
+
+  <!-- Header -->
+  <div class="streak-header">
+    <h2>🔥 Your Task Streak</h2>
+    <span class="streak-count">{{ streak }} Days</span>
+  </div>
+
+  <p class="streak-subtext">
+    Keep completing tasks daily to maintain your streak and earn rewards 🚀
+  </p>
+
+  <!-- Progress Bar -->
+  <div class="progress-wrapper">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <p class="progress-label">
+      Weekly Goal Progress: <span id="progressText">0%</span>
+    </p>
+  </div>
+  <br>
+  <h3 style="margin-top:20px;font-size:14px;color:#cbd5e1;">
+  Monthly Activity
+</h3>
+
+  <!-- Heatmap Output -->
+  <div id="heatmap-wrapper">
+    
+  </div>
+
+</div>
+
+<!-- ================= HEATMAP CSS ================= -->
 <style>
-#heatmap{
+  /* ================= STREAK CARD ================= */
+#heatmap-wrapper{
+  margin-top:15px;
+  display:flex;
+  gap:25px;
+  overflow-x:auto;
+}
+
+.month-name{
+  font-size:12px;
+  margin-bottom:6px;
+  color:#9ca3af;
+}
+
+.days{
   display:grid;
-  grid-template-columns: repeat(30, 18px);
+  grid-template-columns:repeat(7,18px);
   gap:5px;
 }
-.hm-cell{
-  width:18px;
-  height:18px;
-  border-radius:3px;
-  background:#1e293b;
+
+
+.hm-cell:hover{
+  transform:scale(1.2);
 }
+
 .l1{background:#14532d;}
 .l2{background:#166534;}
 .l3{background:#22c55e;}
 .l4{background:#4ade80;}
+
+.streak-card{
+  margin-top:40px;
+  padding:25px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 10px 35px rgba(0,0,0,0.45);
+  width:650px;
+}
+
+.streak-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.streak-header h2{
+  font-size:20px;
+  font-weight:600;
+  color:white;
+}
+
+.streak-count{
+  background:linear-gradient(135deg,#38bdf8,#22c55e);
+  padding:6px 14px;
+  border-radius:15px;
+  font-size:13px;
+  font-weight:bold;
+  color:white;
+}
+
+.streak-subtext{
+  margin-top:8px;
+  font-size:14px;
+  color:#9ca3af;
+}
+
+/* ================= PROGRESS BAR ================= */
+
+.progress-wrapper{
+  margin-top:18px;
+}
+
+.progress-bar{
+  width:100%;
+  height:14px;
+  border-radius:20px;
+  background:rgba(255,255,255,0.15);
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+  width:0%;
+  border-radius:20px;
+  background:linear-gradient(to right,#22c55e,#38bdf8);
+  transition:width 1.2s ease-in-out;
+}
+
+.progress-label{
+  margin-top:8px;
+  font-size:13px;
+  color:#cbd5e1;
+}
+#heatmap-wrapper{
+  margin-top:20px;
+  display:flex;
+  gap:25px;
+  overflow-x:auto;
+  padding-top:10px;
+}
+
+.streak-card{ width:100%; max-width:900px; }
+
+.hm-cell{
+  width:18px;
+  height:18px;
+  border-radius:4px;
+  background:#ecf1f7;
+}
+
+
+.month{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.month-name{
+  font-size:13px;
+  margin-bottom:8px;
+  color:#9ca3af;
+}
+
+.days{
+  display:grid;
+  grid-template-columns:repeat(7,16px);
+  gap:4px;
+}
+
+.hm-cell:hover{
+  transform:scale(1.2);
+}
+
+/* Activity Levels */
+.l1{ background:#14532d; }
+.l2{ background:#166534; }
+.l3{ background:#22c55e; }
+.l4{ background:#4ade80; }
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async () => {
 
-  fetch("/heatmap-data")
-  .then(r => r.json())
-  .then(data => {
+  const wrapper = document.getElementById("heatmap-wrapper");
+  wrapper.innerHTML = "";
 
-    console.log("Heatmap data:", data);
+  let data = {};
 
-    const box = document.getElementById("heatmap");
+  try {
+    const res = await fetch("/heatmap-data");
+    data = await res.json();
+    console.log("Heatmap Data:", data);
+  }
+  catch(err){
+    console.log("Fetch Error:", err);
+  }
 
-    for(let i=89;i>=0;i--){
-      const d = new Date();
-      d.setDate(d.getDate()-i);
-      const ds = d.toISOString().split("T")[0];
+  // Test Highlight
+  data["2026-01-05"] = 4;
+  data["2026-02-10"] = 3;
+  data["2026-03-15"] = 2;
 
-      const v = data[ds] || 0;
+  const months = [
+    { name:"Jan", days:31, index:0 },
+    { name:"Feb", days:28, index:1 },
+    { name:"Mar", days:31, index:2 }
+  ];
 
-      const c = document.createElement("div");
-      c.className = "hm-cell";
+  const year = new Date().getFullYear();
 
-      if(v==1) c.classList.add("l1");
-      else if(v==2) c.classList.add("l2");
-      else if(v==3) c.classList.add("l3");
-      else if(v>=4) c.classList.add("l4");
+  months.forEach(m => {
 
-      c.title = ds+" : "+v+" tasks";
-      box.appendChild(c);
+    const monthDiv = document.createElement("div");
+    monthDiv.className = "month";
+
+    const title = document.createElement("div");
+    title.className = "month-name";
+    title.innerText = m.name;
+
+    const grid = document.createElement("div");
+    grid.className = "days";
+
+    for(let d=1; d<=m.days; d++){
+
+      let dateObj = new Date(year, m.index, d);
+      let dateStr = dateObj.toISOString().split("T")[0];
+
+      let value = data[dateStr] || 0;
+
+      const cell = document.createElement("div");
+      cell.className = "hm-cell";
+
+      if(value==1) cell.classList.add("l1");
+      else if(value==2) cell.classList.add("l2");
+      else if(value==3) cell.classList.add("l3");
+      else if(value>=4) cell.classList.add("l4");
+
+      grid.appendChild(cell);
     }
 
+    monthDiv.appendChild(title);
+    monthDiv.appendChild(grid);
+    wrapper.appendChild(monthDiv);
   });
+
 });
 </script>
+
+<!--heatmap finish heheee-->
 <!-- 🔥 HEATMAP END -->
   </main>
 </div>

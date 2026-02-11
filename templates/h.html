@@ -1,0 +1,56 @@
+<!--
+    <!-- 🔥 HEATMAP START -->
+<h2 style="margin-top:40px;">🔥 Your Task Streak</h2>
+<div id="heatmap" style="margin-top:15px;"></div>
+
+<style>
+#heatmap{
+  display:grid;
+  grid-template-columns: repeat(30, 18px);
+  gap:5px;
+}
+.hm-cell{
+  width:18px;
+  height:18px;
+  border-radius:3px;
+  background:#1e293b;
+}
+.l1{background:#14532d;}
+.l2{background:#166534;}
+.l3{background:#22c55e;}
+.l4{background:#4ade80;}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  fetch("/heatmap-data")
+  .then(r => r.json())
+  .then(data => {
+
+    console.log("Heatmap data:", data);
+
+    const box = document.getElementById("heatmap");
+
+    for(let i=89;i>=0;i--){
+      const d = new Date();
+      d.setDate(d.getDate()-i);
+      const ds = d.toISOString().split("T")[0];
+
+      const v = data[ds] || 0;
+
+      const c = document.createElement("div");
+      c.className = "hm-cell";
+
+      if(v==1) c.classList.add("l1");
+      else if(v==2) c.classList.add("l2");
+      else if(v==3) c.classList.add("l3");
+      else if(v>=4) c.classList.add("l4");
+
+      c.title = ds+" : "+v+" tasks";
+      box.appendChild(c);
+    }
+
+  });
+}); 
+-->
