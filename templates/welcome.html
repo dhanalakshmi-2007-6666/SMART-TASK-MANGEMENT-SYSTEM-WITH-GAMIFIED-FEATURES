@@ -434,8 +434,6 @@ p{
   border-radius:4px;
   background:#ecf1f7;
 }
-
-
 .month{
   display:flex;
   flex-direction:column;
@@ -458,15 +456,15 @@ p{
   transform:scale(1.2);
 }
 
-/* Activity Levels */
 .l1{ background:#14532d; }
 .l2{ background:#166534; }
 .l3{ background:#22c55e; }
 .l4{ background:#4ade80; }
 </style>
 
+
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", async () => {
 
   const wrapper = document.getElementById("heatmap-wrapper");
   wrapper.innerHTML = "";
@@ -476,24 +474,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     const res = await fetch("/heatmap-data");
     data = await res.json();
-    console.log("Heatmap Data:", data);
-  }
-  catch(err){
+  } catch(err) {
     console.log("Fetch Error:", err);
   }
 
-  // Test Highlight
-  data["2026-01-05"] = 4;
-  data["2026-02-10"] = 3;
-  data["2026-03-15"] = 2;
-
-  const months = [
-    { name:"Jan", days:31, index:0 },
-    { name:"Feb", days:28, index:1 },
-    { name:"Mar", days:31, index:2 }
-  ];
-
   const year = new Date().getFullYear();
+
+
+  data[`${year}-01-05`] = 4;
+  data[`${year}-02-10`] = 3;
+  data[`${year}-03-15`] = 2;
+
+
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    name: new Date(year, i).toLocaleString("default", { month: "short" }),
+    days: new Date(year, i + 1, 0).getDate(),
+    index: i
+  }));
 
   months.forEach(m => {
 
@@ -507,7 +504,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const grid = document.createElement("div");
     grid.className = "days";
 
-    for(let d=1; d<=m.days; d++){
+    for(let d = 1; d <= m.days; d++) {
 
       let dateObj = new Date(year, m.index, d);
       let dateStr = dateObj.toISOString().split("T")[0];
@@ -517,10 +514,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const cell = document.createElement("div");
       cell.className = "hm-cell";
 
-      if(value==1) cell.classList.add("l1");
-      else if(value==2) cell.classList.add("l2");
-      else if(value==3) cell.classList.add("l3");
-      else if(value>=4) cell.classList.add("l4");
+      if(value == 1) cell.classList.add("l1");
+      else if(value == 2) cell.classList.add("l2");
+      else if(value == 3) cell.classList.add("l3");
+      else if(value >= 4) cell.classList.add("l4");
 
       grid.appendChild(cell);
     }
@@ -531,8 +528,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
 });
-</script>
 
+</script>
 <!--heatmap finish heheee-->
   </main>
 </div>
