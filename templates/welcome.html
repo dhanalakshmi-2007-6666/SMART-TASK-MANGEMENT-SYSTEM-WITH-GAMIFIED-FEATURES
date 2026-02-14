@@ -465,7 +465,6 @@ p{
 
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
-
   const wrapper = document.getElementById("heatmap-wrapper");
   wrapper.innerHTML = "";
 
@@ -491,6 +490,7 @@ p{
     days: new Date(year, i + 1, 0).getDate(),
     index: i
   }));
+
 
   months.forEach(m => {
 

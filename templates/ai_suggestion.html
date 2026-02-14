@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Task Suggestion</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 40px;
+
+      background:
+        radial-gradient(circle at 20% 10%, #1e293b 0%, transparent 40%),
+        radial-gradient(circle at 80% 90%, #0f766e 0%, transparent 35%),
+        #020617;
+
+      color: #e5e7eb;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 35px;
+      font-size: 34px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .ai-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      padding: 30px;
+
+      box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+      transition: all 0.25s ease;
+    }
+
+    .ai-card:hover {
+      transform: translateY(-6px);
+      border-color: #38bdf8;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65);
+    }
+
+    .task-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #38bdf8;
+      margin-bottom: 15px;
+    }
+
+    .risk-box {
+      margin-top: 15px;
+      padding: 14px 18px;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .risk-high {
+      background: rgba(248, 113, 113, 0.15);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: #f87171;
+    }
+
+    .risk-low {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    .suggestion-text {
+      margin-top: 20px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #cbd5e1;
+    }
+
+    .btn-back {
+      margin-top: 30px;
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+
+      background: linear-gradient(135deg, #1e40af, #2563eb);
+      color: white;
+
+      transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>🤖 AI Task Analysis</h1>
+
+    <div class="ai-card">
+
+      <div class="task-title">
+        📌 Task: {{ taskname }}
+      </div>
+        <div class="risk-box risk-high">
+          🚨 High Delay Risk
+        </div>
+        <br>
+        <div class="risk-box risk-low">
+          ✅  Low Delay Risk
+        </div>
+      <p class="suggestion-text">
+      </p>
+
+      <a href="" class="btn-back">
+        ⬅ Back to Tasks
+      </a>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

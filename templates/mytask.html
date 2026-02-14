@@ -190,6 +190,56 @@ h2 {
     gap: 6px;
   }
 }
+ button {
+      margin-top: 20px;
+      height: 50px;
+      width: 150px;
+      padding: 12px;
+      border: none;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::after {
+      content: "";
+      position: absolute;
+      width: 120%;
+      height: 120%;
+      top: -50%;
+      left: -50%;
+      background: rgba(255, 255, 255, 0.25);
+      transform: rotate(45deg) translateX(-100%);
+      transition: transform 0.5s ease;
+    }
+
+    button:hover::after {
+      transform: rotate(45deg) translateX(100%);
+    }
+
+/*.ai-btn button{
+  margin-top: 15px;
+  border-radius: 16px;
+  font-size: 18px;
+  height: 50px;
+  width: 150px;
+  background-color: rgb(193, 44, 141);
+  border: 2px solid rgb(74, 61, 61);
+}
+.ai-btn button:hover{
+  color: white;
+  background-color: rgb(210, 72, 157);
+}*/
+button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+}
 
   </style>
 </head>
@@ -200,8 +250,14 @@ h2 {
   <h1>My Tasks</h1>
   <h3>Your current energy: {{ energy }}</h3>
 
-<a href="/energy-check">Change Energy</a> |
-<a href="/alltasks">View All Tasks</a>
+<div class="ai-btn">
+  <a href="/energy-check" >
+    <button>Change Energy</button> 
+  </a> |  
+<a href="/alltasks">
+  <button>View All Tasks</button>
+</a>
+</div>
 
 
   <!-- ================= NORMAL TASKS ================= -->
